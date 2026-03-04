@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Errore del Server</title>
+  <style th:replace="~{fragments :: styles}"></style>
+  <style>
+    .error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: var(--bg-base); }
+    .error-code { font-size: 8rem; font-weight: 900; color: var(--warning); line-height: 1; margin-bottom: 20px; }
+    .error-title { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+    .error-message { font-size: 1rem; color: var(--text-muted); max-width: 500px; margin-bottom: 32px; line-height: 1.6; }
+    .error-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .error-icon { font-size: 4rem; margin-bottom: 20px; }
+  </style>
+</head>
+
+<body>
+<div class="error-page">
+  <div class="error-icon">⚠️</div>
+  <div class="error-code">500</div>
+  <h1 class="error-title">Errore del Server</h1>
+  <p class="error-message">
+    Qualcosa è andato storto sul nostro server.
+    <br>
+    Stiamo lavorando per risolvere il problema. Riprova tra qualche minuto.
+  </p>
+
+  <div class="error-actions">
+    <a href="javascript:location.reload()" class="btn btn-primary">
+      🔄 Ricarica Pagina
+    </a>
+    <a th:href="@{/vault}" class="btn btn-secondary">
+      🏠 Torna al Vault
+    </a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragments</title>
+
+    <style th:fragment="styles">
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ═══════════════════════════════════════════════════════
+       DARK THEME (default)
+       ═══════════════════════════════════════════════════════ */
+        :root {
+            --bg-base:        #0f1117;
+            --bg-card:        #1a1d27;
+            --bg-card-hover:  #232736;
+            --bg-input:       #12141c;
+            --bg-hover:       #232736;
+            --border:         #2e3244;
+            --border-focus:   #6c63ff;
+
+            --text-primary:   #eef0f4;
+            --text-secondary: #8b90a0;
+            --text-muted:     #555d72;
+            --text-tertiary:  #3d4152;
+
+            --accent:         #6c63ff;
+            --accent-hover:   #8279ff;
+            --accent-glow:    rgba(108, 99, 255, 0.25);
+
+            --success:        #34d399;
+            --success-bg:     rgba(52, 211, 153, 0.12);
+            --error:          #f87171;
+            --error-bg:       rgba(248, 113, 113, 0.12);
+            --warning:        #fbbf24;
+            --warning-bg:     rgba(251, 191, 36, 0.12);
+
+            --radius:         10px;
+            --radius-sm:      6px;
+            --radius-lg:      16px;
+            --radius-md:      8px;
+
+            --font-sans:      'Inter', 'Segoe UI', system-ui, sans-serif;
+            --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
+
+            --shadow-card:    0 4px 24px rgba(0,0,0,.35);
+            --shadow-glow:    0 0 20px var(--accent-glow);
+
+            --transition:     .2s ease;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+       LIGHT THEME
+       ═══════════════════════════════════════════════════════ */
+        [data-theme="light"] {
+            --bg-base:        #f5f7fa;
+            --bg-card:        #ffffff;
+            --bg-card-hover:  #f8f9fb;
+            --bg-input:       #f0f2f5;
+            --bg-hover:       #e8eaf0;
+            --border:         #d4d7e0;
+            --border-focus:   #6c63ff;
+
+            --text-primary:   #1a1d27;
+            --text-secondary: #4a5568;
+            --text-muted:     #718096;
+            --text-tertiary:  #a0aec0;
+
+            --accent:         #6c63ff;
+            --accent-hover:   #5a52d5;
+            --accent-glow:    rgba(108, 99, 255, 0.15);
+
+            --success:        #10b981;
+            --success-bg:     rgba(16, 185, 129, 0.1);
+            --error:          #ef4444;
+            --error-bg:       rgba(239, 68, 68, 0.1);
+            --warning:        #f59e0b;
+            --warning-bg:     rgba(245, 158, 11, 0.1);
+
+            --shadow-card:    0 2px 12px rgba(0,0,0,.08);
+            --shadow-glow:    0 0 16px var(--accent-glow);
+        }
+
+        /* Smooth transition when switching themes */
+        * {
+            transition: background-color 0.3s ease,
+            color 0.3s ease,
+            border-color 0.3s ease;
+        }
+
+        /* Disable transitions on inputs/buttons to avoid lag */
+        input, button, select, textarea {
+            transition: background-color 0.2s ease,
+            border-color 0.2s ease !important;
+        }
+
+        html { font-size: 16px; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-base);
+            color:      var(--text-primary);
+            min-height: 100vh;
+            display:    flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--accent); text-decoration: none; transition: color var(--transition); }
+        a:hover { color: var(--accent-hover); }
+
+        input, button, select, textarea {
+            font-family: inherit;
+            font-size:   .9rem;
+        }
+
+        .btn {
+            display:         inline-flex;
+            align-items:     center;
+            justify-content: center;
+            gap:             6px;
+            padding:         10px 20px;
+            border:          1px solid transparent;
+            border-radius:   var(--radius);
+            cursor:          pointer;
+            font-weight:     600;
+            font-size:       .88rem;
+            letter-spacing:  .02em;
+            transition:      background var(--transition),
+                             box-shadow var(--transition),
+                             transform  var(--transition);
+            user-select:     none;
+            white-space:     nowrap;
+        }
+        .btn:active { transform: scale(.97); }
+
+        .btn-primary {
+            background: var(--accent);
+            color:      #fff;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color:      var(--text-primary);
+            border:     1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color:      var(--error);
+            border:     1px solid var(--error);
+        }
+        .btn-danger:hover {
+            background: var(--error-bg);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color:      var(--text-secondary);
+            padding:    6px 10px;
+            font-size:  .82rem;
+        }
+        .btn-ghost:hover { color: var(--text-primary); }
+
+        .btn-sm { padding: 6px 12px; font-size: .8rem; }
+        .btn-lg { padding: 13px 28px; font-size: .95rem; }
+        .btn-full { width: 100%; }
+
+        .form-group {
+            display:        flex;
+            flex-direction: column;
+            gap:            6px;
+            margin-bottom:  18px;
+        }
+        .form-group label {
+            font-size:   .82rem;
+            font-weight: 600;
+            color:       var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            background:    var(--bg-input);
+            border:        1px solid var(--border);
+            border-radius: var(--radius);
+            color:         var(--text-primary);
+            padding:       11px 14px;
+            outline:       none;
+            transition:    border-color var(--transition), box-shadow var(--transition);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--border-focus);
+            box-shadow:   0 0 0 3px var(--accent-glow);
+        }
+        .form-group textarea { resize: vertical; min-height: 72px; }
+
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper input { width: 100%; padding-right: 40px; }
+        .input-wrapper .input-action {
+            position:   absolute;
+            right:      12px;
+            top:        50%;
+            transform:  translateY(-50%);
+            background: none;
+            border:     none;
+            color:      var(--text-muted);
+            cursor:     pointer;
+            font-size:  1.1rem;
+            transition: color var(--transition);
+            padding:    4px;
+        }
+        .input-wrapper .input-action:hover { color: var(--text-primary); }
+
+        .card {
+            background:    var(--bg-card);
+            border:        1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow:    var(--shadow-card);
+            transition:    border-color var(--transition), box-shadow var(--transition);
+        }
+        .card:hover {
+            border-color: rgba(108,99,255,.3);
+            box-shadow:   var(--shadow-card), 0 0 12px var(--accent-glow);
+        }
+        .card-header {
+            padding:       18px 22px 12px;
+            border-bottom: 1px solid var(--border);
+            display:       flex;
+            align-items:   center;
+            justify-content: space-between;
+        }
+        .card-body { padding: 18px 22px; }
+
+        .alert {
+            display:       flex;
+            align-items:   flex-start;
+            gap:           12px;
+            padding:       14px 18px;
+            border-radius: var(--radius);
+            font-size:     .88rem;
+            margin-bottom: 18px;
+            animation:     slideDown .25s ease;
+        }
+        .alert .alert-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+        .alert-success  { background: var(--success-bg);  border: 1px solid var(--success);  color: var(--success);  }
+        .alert-error    { background: var(--error-bg);    border: 1px solid var(--error);    color: var(--error);    }
+        .alert-warning  { background: var(--warning-bg);  border: 1px solid var(--warning);  color: var(--warning);  }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        .modal-overlay {
+            position:         fixed;
+            inset:            0;
+            background:       rgba(0,0,0,.55);
+            backdrop-filter:  blur(3px);
+            display:          flex;
+            align-items:      center;
+            justify-content:  center;
+            z-index:          900;
+            opacity:          0;
+            pointer-events:   none;
+            transition:       opacity .25s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal {
+            background:    var(--bg-card);
+            border:        1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow:    var(--shadow-card);
+            width:         90%;
+            max-width:     480px;
+            max-height:    90vh;
+            overflow-y:    auto;
+            transform:     translateY(18px) scale(.97);
+            transition:    transform .25s ease;
+        }
+        .modal-overlay.active .modal { transform: translateY(0) scale(1); }
+
+        .modal-header {
+            display:       flex;
+            align-items:   center;
+            justify-content: space-between;
+            padding:       20px 24px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-header h3 { font-size: 1.05rem; }
+        .modal-close {
+            background: none; border: none;
+            color: var(--text-muted); font-size: 1.3rem;
+            cursor: pointer; padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            transition: color var(--transition), background var(--transition);
+        }
+        .modal-close:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+
+        .modal-body { padding: 20px 24px 24px; }
+
+        .strength-bar-container {
+            margin-top: 8px;
+            display: flex;
+            gap: 5px;
+        }
+        .strength-segment {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            transition: background .3s ease;
+        }
+        .strength-label {
+            font-size:  .75rem;
+            margin-top: 5px;
+            font-weight: 600;
+            transition: color .3s ease;
+            color: var(--text-muted);
+        }
+
+        .strength-1 .strength-segment:nth-child(-n+1) { background: var(--error);   }
+        .strength-2 .strength-segment:nth-child(-n+2) { background: var(--warning); }
+        .strength-3 .strength-segment:nth-child(-n+3) { background: var(--accent);  }
+        .strength-4 .strength-segment                  { background: var(--success); }
+
+        .strength-1 + .strength-label { color: var(--error);   }
+        .strength-2 + .strength-label { color: var(--warning); }
+        .strength-3 + .strength-label { color: var(--accent);  }
+        .strength-4 + .strength-label { color: var(--success); }
+
+        .badge {
+            display:         inline-flex;
+            align-items:     center;
+            padding:         3px 10px;
+            border-radius:   20px;
+            font-size:       .75rem;
+            font-weight:     600;
+            letter-spacing:  .03em;
+        }
+        .badge-accent  { background: var(--accent-glow);  color: var(--accent);  }
+        .badge-success { background: var(--success-bg);   color: var(--success); }
+        .badge-error   { background: var(--error-bg);     color: var(--error);   }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+        .mt-1  { margin-top:  8px;  }
+        .mt-2  { margin-top:  16px; }
+        .mb-2  { margin-bottom: 16px; }
+        .flex  { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .gap-2 { gap: 10px; }
+        .text-muted { color: var(--text-muted); font-size: .82rem; }
+        .w-full { width: 100%; }
+
+        ::-webkit-scrollbar            { width: 6px; }
+        ::-webkit-scrollbar-track      { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb      { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .font-mono { font-family: var(--font-mono); letter-spacing: .06em; }
+
+        @media (max-width: 600px) {
+            .card-header, .card-body  { padding: 14px 16px; }
+            .modal-header, .modal-body { padding: 16px 18px; }
+            .btn { font-size: .82rem; padding: 9px 14px; }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+   Session Timeout Modal
+   ═══════════════════════════════════════════════════════ */
+
+        .session-timeout-modal .modal {
+            max-width: 480px;
+        }
+
+        .timeout-message {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .timeout-message strong {
+            color: var(--warning);
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timeout-submessage {
+            font-size: .9rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Toast animations */
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    </style>
+</head>
+
+<nav th:fragment="navbar" class="navbar">
+    <style>
+        .navbar {
+            background:     var(--bg-card);
+            border-bottom:  1px solid var(--border);
+            padding:        0 28px;
+            height:         62px;
+            display:        flex;
+            align-items:    center;
+            justify-content: space-between;
+            position:       sticky;
+            top:            0;
+            z-index:        100;
+            backdrop-filter: blur(8px);
+        }
+        .navbar__logo {
+            display:    flex;
+            align-items: center;
+            gap:        10px;
+            text-decoration: none;
+        }
+        .navbar__logo-icon {
+            width: 32px; height: 32px;
+            background: var(--accent);
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .navbar__logo-text {
+            font-size:   1.15rem;
+            font-weight: 700;
+            color:       var(--text-primary);
+            letter-spacing: -.01em;
+        }
+        .navbar__logo-text span { color: var(--accent); }
+
+        .navbar__menu {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar__menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 600;
+            transition: color var(--transition);
+        }
+
+        .navbar__menu a:hover {
+            color: var(--text-primary);
+        }
+
+        .navbar__menu a.active {
+            color: var(--accent);
+            position: relative;
+        }
+
+        .navbar__menu a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .navbar__actions {
+            display:    flex;
+            align-items: center;
+            gap:        12px;
+        }
+        .navbar__user {
+            font-size:  .82rem;
+            color:      var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .navbar__hamburger {
+            display: none;
+            background: none; border: none;
+            color: var(--text-primary);
+            font-size: 1.4rem; cursor: pointer;
+            padding: 6px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 1.2rem;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .navbar__menu { display: none; }
+            .navbar__hamburger { display: block; }
+        }
+
+        @media (max-width: 520px) {
+            .navbar__actions .navbar__user { display: none; }
+        }
+    </style>
+
+    <a th:href="@{/vault}" class="navbar__logo">
+        <div class="navbar__logo-icon">🔐</div>
+        <span class="navbar__logo-text">Vault<span>Shield</span></span>
+    </a>
+
+    <!-- ✅ AGGIUNGI: Menu centralizzato -->
+    <ul class="navbar__menu" sec:authorize="isAuthenticated()">
+        <li><a th:href="@{/vault}">Vault</a></li>
+        <li><a th:href="@{/activity}">Activity</a></li>
+        <li><a th:href="@{/settings/password}">Settings</a></li>
+    </ul>
+
+    <div class="navbar__actions">
+        <button class="theme-toggle"
+                id="themeToggle"
+                onclick="toggleTheme()"
+                aria-label="Toggle dark/light mode"
+                title="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
+        <span sec:authorize="isAuthenticated()" class="navbar__user"
+              th:text="${#authentication.principal.username}">username</span>
+
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0">
+            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+        </form>
+
+        <a sec:authorize="not(isAuthenticated())" th:href="@{/login}" class="btn btn-primary btn-sm">Login</a>
+    </div>
+
+    <button class="navbar__hamburger" aria-label="Menu">☰</button>
+</nav>
+
+<footer th:fragment="footer" class="footer">
+    <style>
+        .footer {
+            margin-top:    auto;
+            padding:       24px 28px;
+            border-top:    1px solid var(--border);
+            display:       flex;
+            align-items:   center;
+            justify-content: space-between;
+            flex-wrap:     wrap;
+            gap:           8px;
+        }
+        .footer p { font-size: .78rem; color: var(--text-muted); }
+        .footer__links { display: flex; gap: 18px; }
+        .footer__links a { font-size: .78rem; color: var(--text-muted); transition: color var(--transition); }
+        .footer__links a:hover { color: var(--accent); }
+    </style>
+
+    <p>&copy; <span th:text="${T(java.time.Year).now().getValue()}">2025</span> VaultShield. All the data is encrypted on the client side.</p>
+    <nav class="footer__links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">GitHub</a>
+    </nav>
+</footer>
+
+<div th:fragment="messages">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span class="alert-icon">✔</span>
+        <span th:text="${successMessage}">Operation completed.</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <span class="alert-icon">✕</span>
+        <span th:text="${errorMessage}">An error occurred.</span>
+    </div>
+    <div th:if="${warningMessage}" class="alert alert-warning">
+        <span class="alert-icon">⚠</span>
+        <span th:text="${warningMessage}">Warning.</span>
+    </div>
+</div>
+
+<div th:fragment="credentialCard(credential)" class="card credential-card">
+    <style>
+        .credential-card .card-header { gap: 10px; }
+
+        .credential-card__service-icon {
+            width: 36px; height: 36px;
+            background: var(--accent-glow);
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .credential-card__info { flex: 1; min-width: 0; }
+        .credential-card__service {
+            font-weight: 700;
+            font-size:   .95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .credential-card__url {
+            font-size: .78rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .credential-card .card-body { display: flex; flex-direction: column; gap: 12px; }
+
+        .credential-card__row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .credential-card__row label {
+            font-size:  .75rem;
+            color:      var(--text-muted);
+            width:      72px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-weight: 600;
+        }
+        .credential-card__row .value {
+            flex: 1;
+            font-size:   .88rem;
+            color:       var(--text-primary);
+            word-break:  break-all;
+        }
+        .credential-card__row .value.font-mono { font-size: .82rem; }
+
+        .password-dots { letter-spacing: 3px; font-size: 1rem; }
+
+        .credential-card__actions {
+            display:         flex;
+            justify-content: flex-end;
+            gap:             6px;
+            padding-top:     8px;
+            border-top:      1px solid var(--border);
+        }
+    </style>
+
+    <div class="card-header">
+        <div class="credential-card__service-icon">
+            <span th:text="${credential.serviceName.substring(0,1).toUpperCase()}">S</span>
+        </div>
+        <div class="credential-card__info">
+            <h3 class="credential-card__title" th:text="${credential.serviceName}">Service</h3>
+            <span class="credential-card__category" th:text="${credential.category}">other</span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="credential-card__row">
+            <label>Username</label>
+            <span class="value" th:text="${credential.username}">username</span>
+        </div>
+
+        <div class="credential-card__row">
+            <label>Password</label>
+            <div class="value password-hidden">••••••••</div>
+            <button class="btn-reveal" onclick="revealPassword(this, '[[${credential.decryptedPassword}]]')">
+                👁
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="copyPassword(this)"
+                    th:attr="data-password=${credential.decryptedPassword}" title="Copy">
+                📋
+            </button>
+        </div>
+
+        <div class="credential-card__row" th:if="${credential.notes != null and !credential.notes.isEmpty()}">
+            <label>Note</label>
+            <button type="button"
+                    class="btn btn-ghost btn-sm notes-toggle"
+                    onclick="toggleNotes(this)"
+                    title="Mostra/nascondi note">
+                📝 <span class="notes-toggle-text">Show</span>
+            </button>
+        </div>
+        <div class="credential-card__notes"
+             th:if="${credential.notes != null and !credential.notes.isEmpty()}"
+             style="display: none;">
+            <div class="notes-content" th:text="${credential.notes}"></div>
+        </div>
+
+        <div class="credential-card__row">
+            <label>Creato</label>
+            <span class="value text-muted"
+                  th:text="${#temporals.format(credential.createdAt, 'dd MMM yyyy HH:mm')}">01 Gen 2025 14:30</span>
+        </div>
+
+        <div class="credential-card__actions">
+            <button class="btn btn-sm btn-edit"
+                    th:data-cred-id="${credential.id}"
+                    th:data-cred-service="${credential.serviceName}"
+                    th:data-cred-username="${credential.username}"
+                    th:data-cred-url="${credential.url}"
+                    th:data-cred-category="${credential.category}"
+                    th:data-cred-notes="${credential.notes}"
+                    onclick="openEditModalFromCard(this)">
+                ✏ Edit
+            </button>
+            <form th:action="@{/vault/delete/{id}(id=${credential.id})}" method="post" style="margin:0"
+                  onsubmit="return confirm('Delete this credential?')">
+                <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="passwordGenerator" class="modal-overlay" id="passwordGeneratorModal">
+    <style>
+        .generator__options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .generator__option {
+            display: flex; align-items: center; gap: 7px;
+            font-size: .84rem; color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+        .generator__option input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 16px; height: 16px;
+            cursor: pointer;
+        }
+
+        .generator__length-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .generator__length-row label {
+            font-size:  .82rem;
+            color:      var(--text-secondary);
+            width:      58px;
+            flex-shrink: 0;
+            font-weight: 600;
+        }
+        .generator__length-row input[type="range"] {
+            flex:          1;
+            accent-color:  var(--accent);
+            cursor:        pointer;
+        }
+        .generator__length-row .length-value {
+            font-family: var(--font-mono);
+            font-size:   .88rem;
+            color:       var(--accent);
+            font-weight: 700;
+            min-width:   28px;
+            text-align:  center;
+        }
+
+        .generator__result {
+            background:    var(--bg-input);
+            border:        1px solid var(--border);
+            border-radius: var(--radius);
+            padding:       14px 16px;
+            display:       flex;
+            align-items:   center;
+            gap:           10px;
+            margin-bottom: 18px;
+            min-height:    52px;
+        }
+        .generator__result .generated-password {
+            flex:        1;
+            font-family: var(--font-mono);
+            font-size:   .92rem;
+            color:       var(--text-primary);
+            word-break:  break-all;
+            letter-spacing: .04em;
+        }
+
+        .generator__actions { display: flex; gap: 10px; justify-content: flex-end; }
+    </style>
+
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="genModalTitle">
+        <div class="modal-header">
+            <h3 id="genModalTitle">🎲 Generate Password</h3>
+            <button type="button" class="modal-close" onclick="closeModal('passwordGeneratorModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <div class="generator__length-row">
+                <label for="pwdLength">Lungh.</label>
+                <input type="range" id="pwdLength" min="8" max="64" value="16"
+                       oninput="document.getElementById('pwdLengthVal').textContent = this.value">
+                <span class="length-value" id="pwdLengthVal">16</span>
+            </div>
+
+            <div class="generator__options">
+                <label class="generator__option">
+                    <input type="checkbox" id="useUppercase" checked> Upper case
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useLowercase" checked> Lower case
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useNumbers" checked> Numbers
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useSymbols"> Symbols
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="noAmbiguous" checked> Without ambiguous characters
+                </label>
+            </div>
+
+            <div class="generator__result">
+                <span class="generated-password" id="generatedPassword">— press Generate —</span>
+            </div>
+
+            <div th:replace="~{fragments :: strengthMeter('generated')}"></div>
+
+            <div class="generator__actions mt-2">
+                <button type="button" class="btn btn-secondary" onclick="generatePassword()">🎲 Generate</button>
+                <button type="button" class="btn btn-primary"   onclick="copyGeneratedPassword()">📋 Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="strengthMeter(contextId)">
+    <div class="strength-bar-container" th:id="'strengthBar-' + ${contextId}">
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+    </div>
+    <div class="strength-label" th:id="'strengthLabel-' + ${contextId}">—</div>
+</div>
+
+<div th:fragment="scripts">
+<script>
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+});
+
+function copyPassword(btn) {
+    navigator.clipboard.writeText(btn.dataset.password).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = orig, 1200);
+    });
+}
+
+async function generatePassword() {
+    const length       = parseInt(document.getElementById('pwdLength').value);
+    const useUpper     = document.getElementById('useUppercase').checked;
+    const useLower     = document.getElementById('useLowercase').checked;
+    const useNum       = document.getElementById('useNumbers').checked;
+    const useSym       = document.getElementById('useSymbols').checked;
+    const noAmbiguous  = document.getElementById('noAmbiguous').checked;
+
+
+    if (!useUpper && !useLower && !useNum && !useSym) {
+        alert('Select at least one character type.');
+        return;
+    }
+
+    try {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content
+            || document.querySelector('input[name="_csrf"]')?.value;
+
+        const response = await fetch('/api/password/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                length: length,
+                useUppercase: useUpper,
+                useLowercase: useLower,
+                useDigits: useNum,
+                useSymbols: useSym,
+                noAmbiguous: noAmbiguous
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert(error.error || 'Error generating a new password');
+            return;
+        }
+
+        const data = await response.json();
+        const password = data.password;
+
+        document.getElementById('generatedPassword').textContent = password;
+        updateStrength(password, 'generated');
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error connecting to the server');
+    }
+}
+
+function copyGeneratedPassword() {
+    const pwd = document.getElementById('generatedPassword').textContent;
+    if (pwd === '— press Generate —') return;
+    navigator.clipboard.writeText(pwd).then(() => {
+        const btn  = document.querySelector('.generator__actions .btn-primary');
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied';
+        setTimeout(() => btn.textContent = orig, 1200);
+    });
+}
+
+function updateStrength(password, contextId) {
+    let score = 0;
+
+    if (password.length >= 8)  score++;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password))                            score++;
+    if (/[^A-Za-z0-9]/.test(password))                     score++;
+
+    const level = score <= 1 ? 1 : score <= 2 ? 2 : score <= 3 ? 3 : 4;
+
+    const labels = { 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' };
+
+    const bar   = document.getElementById('strengthBar-' + contextId);
+    const label = document.getElementById('strengthLabel-' + contextId);
+
+    if (bar) {
+        bar.className = 'strength-bar-container strength-' + level;
+    }
+    if (label) {
+        label.textContent = labels[level];
+        label.className   = 'strength-label';
+        label.classList.add('strength-' + level);
+        const colors = { 1: 'var(--error)', 2: 'var(--warning)', 3: 'var(--accent)', 4: 'var(--success)' };
+        label.style.color = colors[level];
+    }
+}
+
+function toggleNotes(btn) {
+    const card = btn.closest('.credential-card');
+    const notesDiv = card.querySelector('.credential-card__notes');
+    const toggleText = btn.querySelector('.notes-toggle-text');
+
+    if (notesDiv.style.display === 'none') {
+        notesDiv.style.display = 'block';
+        toggleText.textContent = 'Hide';
+        btn.setAttribute('aria-expanded', 'true');
+    } else {
+        notesDiv.style.display = 'none';
+        toggleText.textContent = 'Show';
+        btn.setAttribute('aria-expanded', 'false');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-edit')) {
+            const btn = e.target.closest('.btn-edit');
+
+            const credentialData = {
+                id: btn.dataset.credId,
+                serviceName: btn.dataset.credService,
+                username: btn.dataset.credUsername,
+                url: btn.dataset.credUrl || '',
+                category: btn.dataset.credCategory,
+                notes: btn.dataset.credNotes || ''
+            };
+
+            openEditModal(credentialData);
+        }
+    });
+});
+
+function openEditModal(credentialData) {
+    document.getElementById('editCredId').value = credentialData.id;
+    document.getElementById('editServiceName').value = credentialData.serviceName;
+    document.getElementById('editServiceUrl').value = credentialData.url;
+    document.getElementById('editUsername').value = credentialData.username;
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editCategory').value = credentialData.category;
+    document.getElementById('editNotes').value = credentialData.notes;
+
+    const form = document.getElementById('editCredForm');
+    form.action = `/vault/edit/${credentialData.id}`;
+
+    openModal('editCredentialModal');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar__menu a');
+
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+
+/* ═══════════════════════════════════════════════════════
+   THEME TOGGLE FUNCTIONALITY
+   ═══════════════════════════════════════════════════════ */
+
+/**
+ * Initialize theme on page load.
+ */
+(function initTheme() {
+    // Get saved theme from localStorage (default: dark)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+
+    // Apply theme
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Update icon
+    updateThemeIcon(savedTheme);
+
+    console.log('[Theme] Initialized with theme:', savedTheme);
+})();
+
+/**
+ * Toggle between dark and light theme.
+ */
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Apply new theme
+    document.documentElement.setAttribute('data-theme', newTheme);
+
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme);
+
+    // Update icon
+    updateThemeIcon(newTheme);
+
+    console.log('[Theme] Switched to:', newTheme);
+}
+
+/**
+ * Update theme toggle icon.
+ */
+function updateThemeIcon(theme) {
+    const icon = document.getElementById('themeIcon');
+    if (!icon) return;
+
+    if (theme === 'dark') {
+        icon.textContent = '🌙'; // Moon for dark mode
+    } else {
+        icon.textContent = '☀️'; // Sun for light mode
+    }
+}
+
+/**
+ * Highlight active nav link.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar__menu a');
+
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+</div>
+
+</body>
+</html>

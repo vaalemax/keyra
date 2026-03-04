@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Registration – VaultShield</title>
+
+    <style th:replace="~{fragments :: styles}"></style>
+
+    <style>
+        .login-page {
+            min-height:      100vh;
+            display:         flex;
+            align-items:     center;
+            justify-content: center;
+            position:        relative;
+            overflow:        hidden;
+            background:      var(--bg-base);
+        }
+
+        .login-page__bg {
+            position:       absolute;
+            inset:          0;
+            z-index:        0;
+            overflow:       hidden;
+            pointer-events: none;
+        }
+        .login-page__grid {
+            position:         absolute;
+            inset:            -50%;
+            width:            200%;
+            height:           200%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size:  60px 60px;
+            opacity:          0.18;
+            animation:        gridDrift 40s linear infinite;
+        }
+        @keyframes gridDrift {
+            from { transform: translate(0, 0);     }
+            to   { transform: translate(60px, 60px); }
+        }
+        .login-page__glow {
+            position:      absolute;
+            border-radius: 50%;
+            filter:        blur(100px);
+            opacity:       0.18;
+            animation:     glowPulse 6s ease-in-out infinite alternate;
+        }
+        .login-page__glow--1 {
+            width: 420px; height: 420px;
+            background: var(--accent);
+            top: -120px; left: -100px;
+        }
+        .login-page__glow--2 {
+            width: 320px; height: 320px;
+            background: #3b82f6;
+            bottom: -80px; right: -80px;
+            animation-delay: 2s;
+        }
+        @keyframes glowPulse {
+            from { opacity: 0.12; transform: scale(1);    }
+            to   { opacity: 0.22; transform: scale(1.08); }
+        }
+
+        .login-container {
+            position:  relative;
+            z-index:   1;
+            width:     90%;
+            max-width: 440px;
+            animation: fadeUp .55s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        .login-logo {
+            display:        flex;
+            flex-direction: column;
+            align-items:    center;
+            gap:            14px;
+            margin-bottom:  28px;
+            animation:      fadeUp .55s cubic-bezier(.22,1,.36,1) .08s both;
+        }
+        .login-logo__icon {
+            width: 56px; height: 56px;
+            background:    var(--accent);
+            border-radius: 16px;
+            display:       flex;
+            align-items:   center;
+            justify-content: center;
+            font-size:     1.7rem;
+            box-shadow:    var(--shadow-glow);
+        }
+        .login-logo__text {
+            font-size:      1.5rem;
+            font-weight:    700;
+            color:          var(--text-primary);
+            letter-spacing: -.02em;
+        }
+        .login-logo__text span { color: var(--accent); }
+        .login-logo__sub {
+            font-size:  .82rem;
+            color:      var(--text-muted);
+            margin-top: -8px;
+        }
+
+        .login-card {
+            background:    var(--bg-card);
+            border:        1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow:    var(--shadow-card);
+            padding:       32px 28px 28px;
+            animation:     fadeUp .55s cubic-bezier(.22,1,.36,1) .12s both;
+        }
+
+        .register-form .form-group {
+            animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+        }
+        .register-form .form-group:nth-child(1) { animation-delay: .16s; }
+        .register-form .form-group:nth-child(2) { animation-delay: .22s; }
+        .register-form .form-group:nth-child(3) { animation-delay: .28s; }
+        .register-form .form-group:nth-child(4) { animation-delay: .34s; }
+
+        .register-form .btn-submit {
+            animation: fadeUp .5s cubic-bezier(.22,1,.36,1) .44s both;
+        }
+
+        .login-footer {
+            text-align:  center;
+            margin-top:  22px;
+            font-size:   .82rem;
+            color:       var(--text-muted);
+            animation:   fadeUp .5s cubic-bezier(.22,1,.36,1) .50s both;
+        }
+        .login-footer a {
+            color:       var(--accent);
+            font-weight: 600;
+            transition:  color var(--transition);
+        }
+        .login-footer a:hover { color: var(--accent-hover); }
+
+        .pwd-requirements {
+            background:    var(--bg-input);
+            border:        1px solid var(--border);
+            border-radius: var(--radius);
+            padding:       12px 14px;
+            margin-top:    10px;
+            display:       flex;
+            flex-wrap:     wrap;
+            gap:           6px 18px;
+        }
+        .pwd-req-item {
+            display:     flex;
+            align-items: center;
+            gap:         6px;
+            font-size:   .78rem;
+            color:       var(--text-muted);
+            transition:  color .25s ease;
+        }
+        .pwd-req-item .req-icon {
+            font-size:  .72rem;
+            width:      14px;
+            text-align: center;
+            transition: transform .2s ease;
+        }
+        .pwd-req-item.satisfied {
+            color: var(--success);
+        }
+        .pwd-req-item.satisfied .req-icon {
+            transform: scale(1.15);
+        }
+
+        .strength-wrapper {
+            margin-top: 10px;
+        }
+
+        .confirm-hint {
+            font-size:  .78rem;
+            margin-top: 5px;
+            min-height: 1.2em;
+            transition: color .25s ease, opacity .25s ease;
+            opacity:    0;
+        }
+        .confirm-hint.visible   { opacity: 1; }
+        .confirm-hint.match     { color: var(--success); }
+        .confirm-hint.mismatch  { color: var(--error);   }
+
+        #confirmPassword.input-match    { border-color: var(--success); box-shadow: 0 0 0 3px rgba(52,211,153,.18); }
+        #confirmPassword.input-mismatch { border-color: var(--error);   box-shadow: 0 0 0 3px rgba(248,113,113,.18); }
+
+        .login-error {
+            background:    var(--error-bg);
+            border:        1px solid var(--error);
+            border-radius: var(--radius);
+            color:         var(--error);
+            padding:       12px 16px;
+            font-size:     .85rem;
+            display:       flex;
+            align-items:   flex-start;
+            gap:           10px;
+            margin-bottom: 18px;
+            animation:     slideDown .25s ease;
+        }
+        .login-error .alert-icon { flex-shrink: 0; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        .btn-primary:disabled {
+            opacity:    0.4;
+            cursor:     not-allowed;
+            box-shadow: none;
+        }
+        .btn-primary:disabled:hover {
+            box-shadow: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-card       { padding: 24px 18px 22px; }
+            .login-logo__icon { width: 48px; height: 48px; font-size: 1.4rem; }
+            .login-logo__text { font-size: 1.25rem; }
+            .pwd-requirements { gap: 5px 12px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="login-page">
+
+    <div class="login-page__bg">
+        <div class="login-page__grid"></div>
+        <div class="login-page__glow login-page__glow--1"></div>
+        <div class="login-page__glow login-page__glow--2"></div>
+    </div>
+
+    <div class="login-container">
+
+        <div class="login-logo">
+            <div class="login-logo__icon">🔐</div>
+            <span class="login-logo__text">Vault<span>Shield</span></span>
+            <span class="login-logo__sub">Create your secure vault.</span>
+        </div>
+
+        <div class="login-card">
+
+            <div th:replace="~{fragments :: messages}"></div>
+
+            <div th:if="${errorMessage}" class="login-error">
+                <span class="alert-icon">✕</span>
+                <span th:text="${errorMessage}">Error during registration.</span>
+            </div>
+
+            <form th:action="@{/register}" method="post" class="register-form" id="registerForm" novalidate>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           th:value="${username}"
+                           placeholder="Choose a username"
+                           autocomplete="off"
+                           required
+                           autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="masterPassword">Master Password</label>
+                    <div class="input-wrapper">
+                        <input type="password"
+                               id="masterPassword"
+                               name="password"
+                               placeholder="Create your master password"
+                               autocomplete="new-password"
+                               required
+                               oninput="onMasterPasswordInput()">
+                        <button type="button"
+                                class="input-action"
+                                onclick="togglePasswordVisibility('masterPassword', this)"
+                                aria-label="Show/hide password">
+                            👁
+                        </button>
+                    </div>
+
+                    <div class="pwd-requirements" id="pwdRequirements">
+                        <span class="pwd-req-item" id="req-length">
+                            <span class="req-icon">✕</span> Minimum 8 characters
+                        </span>
+                        <span class="pwd-req-item" id="req-upper">
+                            <span class="req-icon">✕</span> Upper case
+                        </span>
+                        <span class="pwd-req-item" id="req-lower">
+                            <span class="req-icon">✕</span> Lower case
+                        </span>
+                        <span class="pwd-req-item" id="req-number">
+                            <span class="req-icon">✕</span> Number
+                        </span>
+                        <span class="pwd-req-item" id="req-special">
+                            <span class="req-icon">✕</span> Special character
+                        </span>
+                    </div>
+                </div>
+
+                <div class="strength-wrapper">
+                    <div th:replace="~{fragments :: strengthMeter('new')}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-wrapper">
+                        <input type="password"
+                               id="confirmPassword"
+                               name="confirmPassword"
+                               placeholder="Repeat the master password"
+                               autocomplete="new-password"
+                               required
+                               oninput="onConfirmPasswordInput()">
+                        <button type="button"
+                                class="input-action"
+                                onclick="togglePasswordVisibility('confirmPassword', this)"
+                                aria-label="Show/hide password">
+                            👁
+                        </button>
+                    </div>
+                    <div class="confirm-hint" id="confirmHint"></div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary btn-lg btn-full btn-submit"
+                        id="submitBtn"
+                        disabled>
+                    Register
+                </button>
+            </form>
+
+            <div class="login-footer">
+                Do you already have an account? <a th:href="@{/login}">Log in</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments :: scripts}"></div>
+
+<script>
+(function () {
+
+    const masterInput   = document.getElementById('masterPassword');
+    const confirmInput  = document.getElementById('confirmPassword');
+    const confirmHint   = document.getElementById('confirmHint');
+    const submitBtn     = document.getElementById('submitBtn');
+
+    const REQUIREMENTS = {
+        'req-length':  { test: v => v.length >= 8            },
+        'req-upper':   { test: v => /[A-Z]/.test(v)          },
+        'req-lower':   { test: v => /[a-z]/.test(v)          },
+        'req-number':  { test: v => /[0-9]/.test(v)          },
+        'req-special': { test: v => /[^A-Za-z0-9]/.test(v)   }
+    };
+
+    let allRequirementsMet = false;
+    let passwordsMatch     = false;
+
+    window.onMasterPasswordInput = function () {
+        const value = masterInput.value;
+
+        allRequirementsMet = true;
+
+        Object.keys(REQUIREMENTS).forEach(id => {
+            const el   = document.getElementById(id);
+            const icon = el.querySelector('.req-icon');
+            const ok   = REQUIREMENTS[id].test(value);
+
+            el.classList.toggle('satisfied', ok);
+            icon.textContent = ok ? '✔' : '✕';
+
+            if (!ok) allRequirementsMet = false;
+        });
+
+        if (typeof updateStrength === 'function') {
+            updateStrength(value, 'new');
+        }
+
+        if (confirmInput.value.length > 0) {
+            onConfirmPasswordInput();
+        }
+
+        updateSubmitButton();
+    };
+
+    window.onConfirmPasswordInput = function () {
+        const master  = masterInput.value;
+        const confirm = confirmInput.value;
+
+        if (confirm.length === 0) {
+            passwordsMatch          = false;
+            confirmHint.className   = 'confirm-hint';
+            confirmHint.textContent = '';
+            confirmInput.classList.remove('input-match', 'input-mismatch');
+
+        } else if (master === confirm) {
+            passwordsMatch          = true;
+            confirmHint.className   = 'confirm-hint visible match';
+            confirmHint.textContent = '✔ Passwords match';
+            confirmInput.classList.remove('input-mismatch');
+            confirmInput.classList.add('input-match');
+
+        } else {
+            passwordsMatch          = false;
+            confirmHint.className   = 'confirm-hint visible mismatch';
+            confirmHint.textContent = '✕ Passwords do not match';
+            confirmInput.classList.remove('input-match');
+            confirmInput.classList.add('input-mismatch');
+        }
+
+        updateSubmitButton();
+    };
+
+    function updateSubmitButton() {
+        const usernameOk = document.getElementById('username').value.trim().length > 0;
+        submitBtn.disabled = !(usernameOk && allRequirementsMet && passwordsMatch);
+    }
+
+    window.togglePasswordVisibility = function (fieldId, btn) {
+        const input    = document.getElementById(fieldId);
+        const isHidden = input.type === 'password';
+
+        input.type      = isHidden ? 'text'     : 'password';
+        btn.textContent = isHidden ? '🙈'       : '👁';
+        btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        input.focus();
+    };
+
+    document.getElementById('username').addEventListener('input', updateSubmitButton);
+
+})();
+</script>
+</body>
+</html>

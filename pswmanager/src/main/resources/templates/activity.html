@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity History – VaultShield</title>
+    <style th:replace="~{fragments :: styles}"></style>
+
+    <style>
+        /* ═══════════════════════════════════════════════════════
+           Activity Page Styles
+           ═══════════════════════════════════════════════════════ */
+
+        .activity-page {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 24px 48px;
+        }
+
+        /* Header */
+        .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .activity-header__title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Stats Cards */
+        .activity-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card__label {
+            font-size: .8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .stat-card__value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-card__sublabel {
+            font-size: .75rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Timeline */
+        .activity-timeline {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 50px;
+            bottom: -16px;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-base);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .timeline-icon--success {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .timeline-icon--error {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .timeline-action {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .timeline-details {
+            font-size: .85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .timeline-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: .75rem;
+            color: var(--text-tertiary);
+        }
+
+        .timeline-meta__item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: var(--radius);
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge--success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .status-badge--error {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        /* Empty State */
+        .activity-empty {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .activity-empty__icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .activity-empty__title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .activity-empty__desc {
+            font-size: .9rem;
+            color: var(--text-muted);
+        }
+
+        /* Pagination */
+        .activity-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: .9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: .85rem;
+            color: var(--text-muted);
+            padding: 0 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div th:replace="~{fragments :: navbar}"></div>
+
+<!-- Main Content -->
+<main class="activity-page">
+
+    <!-- Header -->
+    <div class="activity-header">
+        <div>
+            <h1 class="activity-header__title">📜 Activity History</h1>
+            <p style="font-size: .85rem; color: var(--text-muted); margin-top: 4px;">
+                Track all actions performed in your vault
+            </p>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:replace="~{fragments :: messages}"></div>
+
+    <!-- Stats -->
+    <div class="activity-stats">
+        <div class="stat-card">
+            <span class="stat-card__label">Total Events</span>
+            <span class="stat-card__value" th:text="${totalItems}">0</span>
+            <span class="stat-card__sublabel">All time</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-card__label">Last Activity</span>
+            <span class="stat-card__value" style="font-size: 1.2rem;"
+                  th:text="${latestActivity != null ? latestActivity.relativeTime : 'N/A'}">
+                N/A
+            </span>
+            <span class="stat-card__sublabel"
+                  th:text="${latestActivity != null ? latestActivity.actionLabel : 'No activity yet'}">
+                No activity yet
+            </span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card">
+                <span class="stat-card__label">This Week</span>
+                <span class="stat-card__value" th:text="${weeklyTotal}">0</span>
+                <span class="stat-card__sublabel">Last 7 days</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="activity-timeline">
+
+        <!-- Empty State -->
+        <div class="activity-empty" th:if="${activities.isEmpty()}">
+            <div class="activity-empty__icon">📭</div>
+            <h3 class="activity-empty__title">No Activity Yet</h3>
+            <p class="activity-empty__desc">
+                Your activity history will appear here once you start using the vault.
+            </p>
+        </div>
+
+        <!-- Activity Items -->
+        <div th:each="activity : ${activities}" class="timeline-item">
+            <div class="timeline-icon"
+                 th:classappend="${'timeline-icon--' + activity.color}">
+                <span th:text="${activity.icon}">🔓</span>
+            </div>
+
+            <div class="timeline-content">
+                <div class="timeline-action">
+                    <span th:text="${activity.actionLabel}">Action</span>
+                    <span class="status-badge"
+                          th:classappend="${'status-badge--' + activity.color}"
+                          th:text="${activity.statusLabel}">
+                        Success
+                    </span>
+                </div>
+
+                <div class="timeline-details" th:if="${activity.details}">
+                    <span th:text="${activity.details}">Details</span>
+                </div>
+
+                <div class="timeline-meta">
+                    <span class="timeline-meta__item">
+                        🕒 <span th:text="${activity.relativeTime}">2 hours ago</span>
+                    </span>
+                    <span class="timeline-meta__item" th:if="${activity.ipAddress}">
+                        🌐 <span th:text="${activity.ipAddress}">192.168.1.1</span>
+                    </span>
+                    <span class="timeline-meta__item"
+                          th:if="${activity.userAgent}"
+                          th:title="${activity.userAgent}">
+                        💻
+                        <span th:text="${activity.userAgent.length() > 30
+                                       ? activity.userAgent.substring(0, 30) + '...'
+                                       : activity.userAgent}">
+                            Browser
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="activity-pagination" th:if="${totalPages > 1}">
+        <button class="pagination-btn"
+                th:disabled="${currentPage == 0}"
+                th:onclick="'window.location.href=\'/activity?page=' + ${currentPage - 1} + '\''">
+            ← Previous
+        </button>
+
+        <span class="pagination-info">
+            Page <strong th:text="${currentPage + 1}">1</strong> of
+            <strong th:text="${totalPages}">1</strong>
+        </span>
+
+        <button class="pagination-btn"
+                th:disabled="${currentPage >= totalPages - 1}"
+                th:onclick="'window.location.href=\'/activity?page=' + ${currentPage + 1} + '\''">
+            Next →
+        </button>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<div th:replace="~{fragments :: footer}"></div>
+
+<!-- Scripts -->
+<div th:replace="~{fragments :: scripts}"></div>
+
+</body>
+</html>
