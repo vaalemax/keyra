@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -147,6 +149,97 @@ public class UserService {
         userRepository.save(user);
 
         log.info("Master password changed successfully for user: {}", user.getUsername());
+    }
+
+    /**
+     * Enable 2FA for user.
+     */
+    @Transactional
+    public void enableTwoFactor(User user, String secret, List<String> backupCodes) {
+        log.info("Enabling 2FA for user: {}", user.getUsername());
+
+        user.setTwoFactorEnabled(true);
+        user.setTwoFactorSecret(secret);
+
+        // Store backup codes as JSON
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String backupCodesJson = mapper.writeValueAsString(backupCodes);
+            user.setBackupCodes(backupCodesJson);
+        } catch (Exception e) {
+            log.error("Error storing backup codes", e);
+            throw new RuntimeException("Error storing backup codes", e);
+        }
+
+        userRepository.save(user);
+        log.info("2FA enabled successfully for user: {}", user.getUsername());
+    }
+
+    /**
+     * Disable 2FA for user.
+     */
+    @Transactional
+    public void disableTwoFactor(User user) {
+        log.info("Disabling 2FA for user: {}", user.getUsername());
+
+        user.setTwoFactorEnabled(false);
+        user.setTwoFactorSecret(null);
+        user.setBackupCodes(null);
+
+        userRepository.save(user);
+        log.info("2FA disabled successfully for user: {}", user.getUsername());
+    }
+
+    /**
+     * Get backup codes for user.
+     */
+    public List<String> getBackupCodes(User user) {
+        if (user.getBackupCodes() == null) {
+            return new ArrayList<>();
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(user.getBackupCodes(),
+                    mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+        } catch (Exception e) {
+            log.error("Error reading backup codes", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Update backup codes after one is used.
+     */
+    @Transactional
+    public void updateBackupCodes(User user, List<String> updatedCodes) {
+        log.info("Updating backup codes for user: {}", user.getUsername());
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String backupCodesJson = mapper.writeValueAsString(updatedCodes);
+            user.setBackupCodes(backupCodesJson);
+            userRepository.save(user);
+
+            log.info("Backup codes updated - remaining: {}", updatedCodes.size());
+        } catch (Exception e) {
+            log.error("Error updating backup codes", e);
+            throw new RuntimeException("Error updating backup codes", e);
+        }
+    }
+
+    /**
+     * Verify user's password.
+     *
+     * @param user The user
+     * @param password Password to verify
+     * @return true if password is correct, false otherwise
+     */
+    public boolean verifyPassword(User user, String password) {
+        log.debug("Verifying password for user: {}", user.getUsername());
+        boolean isValid = passwordEncoder.matches(password, user.getPasswordHash());
+        log.debug("Password verification result for user {}: {}", user.getUsername(), isValid);
+        return isValid;
     }
 
 

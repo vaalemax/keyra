@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth.
-                        requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/h2-console/**", "/error/**").permitAll()
+                        requestMatchers("/", "/login", "/register", "/login/2fa", "/login/2fa/verify", "/css/**", "/js/**", "/h2-console/**", "/error/**").permitAll()
                         .requestMatchers("/api/password/generate").authenticated()
                         .requestMatchers("/api/session/**").authenticated()
                         .requestMatchers("/settings/**").authenticated()
@@ -49,6 +49,12 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
+                )
+
+                .sessionManagement(session -> session
+                        .sessionFixation().migrateSession()
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
                 )
 
                 .csrf(csrf -> csrf

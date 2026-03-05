@@ -15,10 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class VaultExportDTO {
 
-    private String version;                // Export format version
-    private LocalDateTime exportedAt;      // Export timestamp
-    private String username;               // User who exported
-    private int credentialCount;           // Number of credentials
+    private String version;
+    private LocalDateTime exportedAt;
+    private String username;
+    private int credentialCount;
     private List<CredentialDTO> credentials;
 
     /**

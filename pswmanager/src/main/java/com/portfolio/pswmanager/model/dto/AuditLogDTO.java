@@ -17,7 +17,7 @@ public class AuditLogDTO {
 
     private Long id;
     private String action;
-    private String actionLabel;  // Human-readable action
+    private String actionLabel;
     private String status;
     private String statusLabel;
     private String details;
@@ -29,9 +29,6 @@ public class AuditLogDTO {
     private String icon;
     private String color;
 
-    /**
-     * Factory method to create DTO from entity.
-     */
     public static AuditLogDTO fromEntity(AuditLog auditLog) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
@@ -65,6 +62,10 @@ public class AuditLogDTO {
             case PASSWORD_GENERATE -> "Generated password";
             case VAULT_EXPORT -> "Exported vault";
             case VAULT_IMPORT -> "Imported vault";
+            case PASSWORD_CHANGE -> "Changed master password";
+            case TWO_FA_ENABLED -> "Enabled 2FA";
+            case TWO_FA_DISABLED -> "Disabled 2FA";
+            case TWO_FA_VERIFIED -> "Verified 2FA";
             case SYSTEM_ERROR -> "System error";
         };
     }
@@ -82,6 +83,10 @@ public class AuditLogDTO {
             case PASSWORD_GENERATE -> "🎲";
             case VAULT_EXPORT -> "📦";
             case VAULT_IMPORT -> "📥";
+            case PASSWORD_CHANGE -> "🔐";
+            case TWO_FA_ENABLED -> "🛡️";
+            case TWO_FA_DISABLED -> "🔓";
+            case TWO_FA_VERIFIED -> "✔️";
             case SYSTEM_ERROR -> "⚠️";
         };
     }

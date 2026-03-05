@@ -9,18 +9,20 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.jspecify.annotations.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.io.IOException;
 import java.util.Base64;
 
 @Component
-public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+@RequiredArgsConstructor
+public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
 
@@ -28,85 +30,97 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final EncryptionService encryptionService;
     private final AuditService auditService;
 
-    public CustomAuthenticationSuccessHandler(
-            UserRepository userRepository,
-            EncryptionService encryptionService,
-            AuditService auditService) {
-        super("/vault");
-        this.userRepository = userRepository;
-        this.encryptionService = encryptionService;
-        this.auditService = auditService;
-    }
-
     @Override
-    public void onAuthenticationSuccess(@NonNull HttpServletRequest request,
-                                        @NonNull HttpServletResponse response,
-                                        Authentication authentication)
-            throws ServletException {
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException, ServletException {
 
         String username = authentication.getName();
-        log.info("User authenticated successfully: {}", username);
+        log.info("Authentication success for user: {}", username);
 
-        try {
-            // Load user from database
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> {
-                        log.error("User not found after authentication: {}", username);
-                        return new RuntimeException("User not found: " + username);
-                    });
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found: " + username));
 
-            log.debug("User entity loaded for: {}", username);
+        // ✅ Check if 2FA is enabled
+        if (user.isTwoFactorEnabled()) {
+            log.info("2FA enabled - redirecting to verification page");
 
-            // Get master password from request
-            String masterPassword = request.getParameter("password");
-
-            // Decode encryption key (salt + AES key)
-            byte[] combined = Base64.getDecoder().decode(user.getEncryptionKey());
-            byte[] salt = new byte[16];
-            System.arraycopy(combined, 0, salt, 0, 16);
-
-            log.debug("Salt extracted for user: {}", username);
-
-            // Derive AES key
-            SecretKey aesKey = encryptionService.deriveKeyFromPassword(masterPassword, salt);
-
-            log.debug("AES key derived successfully for user: {}", username);
-
-            // Store AES key in session
             HttpSession session = request.getSession();
-            session.setAttribute("AES_KEY", aesKey);
+            session.setAttribute("2FA_USER_ID", user.getId());
+            session.setAttribute("2FA_USERNAME", user.getUsername());
 
-            log.info("AES key stored in session for user: {}", username);
+            getRedirectStrategy().sendRedirect(request, response, "/login/2fa");
+            return;
+        }
 
-            // Audit log successful login
+        // ✅ Derive and store AES key
+        try {
+            SecretKey aesKey = deriveAesKey(user);
+
+            // ✅ IMPORTANTE: Chiama super PRIMA di salvare nella sessione
+            super.onAuthenticationSuccess(request, response, authentication);
+
+            // ✅ Ora salva nella sessione DOPO la migrazione
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                log.error("Session is null after authentication");
+                throw new IllegalStateException("No session available");
+            }
+
+            session.setAttribute("aesKey", aesKey);
+            log.info("AES key stored in session - Session ID: {}", session.getId());
+
+            // Audit log
             auditService.logAction(
                     user,
                     AuditLog.AuditAction.LOGIN_SUCCESS,
                     AuditLog.AuditStatus.SUCCESS,
-                    "Successful login",
-                    auditService.getClientIp(request),
-                    auditService.getUserAgent(request)
+                    "Login successful",
+                    getClientIp(request),
+                    request.getHeader("User-Agent")
             );
 
-            log.info("Login completed successfully for user: {}", username);
-
-            super.onAuthenticationSuccess(request, response, authentication);
-
         } catch (Exception e) {
-            log.error("Error during authentication success handling for user: {}", username, e);
+            log.error("Error in authentication success handler", e);
 
-            // Audit log system error
-            User user = userRepository.findByUsername(username).orElse(null);
             auditService.logAction(
                     user,
                     AuditLog.AuditAction.SYSTEM_ERROR,
                     AuditLog.AuditStatus.FAILURE,
-                    "Error processing login: " + e.getMessage(),
-                    auditService.getClientIp(request),
-                    auditService.getUserAgent(request)
+                    "Login error: " + e.getMessage(),
+                    getClientIp(request),
+                    request.getHeader("User-Agent")
             );
 
-            throw new ServletException("Error processing login", e);
+            response.sendRedirect("/login?error=true");
         }
+    }
+
+    private SecretKey deriveAesKey(User user) throws Exception {
+        String encryptionKey = user.getEncryptionKey();
+        byte[] combined = Base64.getDecoder().decode(encryptionKey);
+
+        byte[] salt = new byte[16];
+        byte[] keyBytes = new byte[32];
+        System.arraycopy(combined, 0, salt, 0, 16);
+        System.arraycopy(combined, 16, keyBytes, 0, 32);
+
+        return encryptionService.recreateKey(keyBytes);
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
     }
 }

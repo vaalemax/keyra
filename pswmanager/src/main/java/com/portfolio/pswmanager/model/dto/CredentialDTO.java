@@ -18,10 +18,8 @@ public class CredentialDTO{
     @Size(min = 2, max = 100, message = "Username needs between 2-100 characters")
     private String username;
 
-    // decrypted psw for visualization
     private String decryptedPassword;
 
-    @Size(min = 8, max = 256, message = "Password must be between 8 and 256 characters")
     private String plainPassword;
 
     @Pattern(

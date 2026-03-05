@@ -34,12 +34,9 @@ public class AuthController {
 
         // Bean Validation errors
         if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldError() != null
-                    ? bindingResult.getFieldError().getDefaultMessage()
-                    : "Invalid data";
+            String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Invalid data";
 
-            log.warn("Registration validation failed for username: {} - Error: {}",
-                    request.getUsername(), errorMessage);
+            log.warn("Registration validation failed for username: {} - Error: {}", request.getUsername(), errorMessage);
 
             // Audit log failure (no user yet, so pass null)
             auditService.logAction(
@@ -71,13 +68,11 @@ public class AuthController {
                     auditService.getUserAgent(httpRequest)
             );
 
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Registration completed successfully!");
+            redirectAttributes.addFlashAttribute("successMessage","Registration completed successfully!");
             return "redirect:/login";
 
         } catch (IllegalArgumentException e) {
-            log.warn("Registration failed for username: {} - Reason: {}",
-                    request.getUsername(), e.getMessage());
+            log.warn("Registration failed for username: {} - Reason: {}", request.getUsername(), e.getMessage());
 
             // Audit log failure
             auditService.logAction(
@@ -94,8 +89,7 @@ public class AuthController {
             return "redirect:/register";
 
         } catch (Exception e) {
-            log.error("Unexpected error during registration for username: {}",
-                    request.getUsername(), e);
+            log.error("Unexpected error during registration for username: {}", request.getUsername(), e);
 
             // Audit log system error
             auditService.logAction(
@@ -107,8 +101,7 @@ public class AuthController {
                     auditService.getUserAgent(httpRequest)
             );
 
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error during registration. Please try again.");
+            redirectAttributes.addFlashAttribute("errorMessage","Error during registration. Please try again.");
             return "redirect:/register";
         }
     }

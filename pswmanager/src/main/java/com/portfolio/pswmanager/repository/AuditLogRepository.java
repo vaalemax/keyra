@@ -26,9 +26,4 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     void deleteByTimestampBefore(LocalDateTime cutoffDate);
 
     List<AuditLog> findByUserIdAndTimestampAfter(Long userId, LocalDateTime timestamp);
-
-    Page<AuditLog> findByUserIdAndActionOrderByTimestampDesc(Long userId, AuditLog.AuditAction action, Pageable pageable);
-
-    Page<AuditLog> findByUserIdAndStatusOrderByTimestampDesc(Long userId, AuditLog.AuditStatus status, Pageable pageable
-    );
 }

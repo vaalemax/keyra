@@ -29,7 +29,7 @@ public class AuditLog {
     @Column(columnDefinition = "TEXT")
     private String details;
 
-    @Column(length = 45) // IPv6 max length
+    @Column(length = 45)
     private String ipAddress;
 
     @Column(length = 500)
@@ -67,6 +67,12 @@ public class AuditLog {
 
         VAULT_EXPORT,
         VAULT_IMPORT,
+
+        PASSWORD_CHANGE,
+
+        TWO_FA_ENABLED,
+        TWO_FA_DISABLED,
+        TWO_FA_VERIFIED,
 
         SYSTEM_ERROR
     }

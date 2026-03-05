@@ -59,7 +59,7 @@ public class CredentialService {
             SecretKey aesKey
     ) {
         log.info("Creating credential for user: {}, service: {}", user.getUsername(), serviceName);
-        validationService.validateCredentialPassword(plainPassword);
+        validationService.validateCredentialPassword(plainPassword, true);
         log.debug("Password validation passed for service: {}", serviceName);
 
         // Cripta password
@@ -107,15 +107,19 @@ public class CredentialService {
         log.debug("Base fields updated for credential ID: {}", credentialId);
 
         if (dto.getPlainPassword() != null && !dto.getPlainPassword().trim().isEmpty()) {
-            validationService.validateCredentialPassword(dto.getPlainPassword());
+            validationService.validateCredentialPassword(dto.getPlainPassword(), false);
             try {
                 String encryptedPassword = encryptionService.encrypt(dto.getPlainPassword(), aesKey);
                 credential.setEncryptedPassword(encryptedPassword);
+                log.debug("Password updated for credential ID: {}", credentialId);
             } catch (Exception e) {
                 log.error("Error encrypting new password for credential ID: {}", credentialId, e);
                 throw new RuntimeException("Error encrypting new password", e);
             }
+        } else {
+            log.debug("Password not changed for credential ID: {}", credentialId);
         }
+
         log.info("Credential updated successfully - ID: {}, user: {}", credentialId, user.getUsername());
         credentialRepository.save(credential);
     }

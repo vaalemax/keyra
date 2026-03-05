@@ -137,7 +137,7 @@ public class PasswordChangeController {
             // Audit log success
             auditService.logAction(
                     user,
-                    AuditLog.AuditAction.SYSTEM_ERROR,  // Or create PASSWORD_CHANGE action
+                    AuditLog.AuditAction.PASSWORD_CHANGE,
                     AuditLog.AuditStatus.SUCCESS,
                     "Master password changed successfully - " + allCredentials.size() + " credentials re-encrypted",
                     auditService.getClientIp(httpRequest),
@@ -159,7 +159,7 @@ public class PasswordChangeController {
 
             auditService.logAction(
                     user,
-                    AuditLog.AuditAction.SYSTEM_ERROR,
+                    AuditLog.AuditAction.PASSWORD_CHANGE,
                     AuditLog.AuditStatus.FAILURE,
                     "Password change failed: " + e.getMessage(),
                     auditService.getClientIp(httpRequest),
@@ -174,7 +174,7 @@ public class PasswordChangeController {
 
             auditService.logAction(
                     user,
-                    AuditLog.AuditAction.SYSTEM_ERROR,
+                    AuditLog.AuditAction.PASSWORD_CHANGE,
                     AuditLog.AuditStatus.FAILURE,
                     "Password change error: " + e.getMessage(),
                     auditService.getClientIp(httpRequest),

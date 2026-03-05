@@ -53,25 +53,51 @@ public class ValidationService {
 
         return errors;
     }
-
+    
     /**
-     * Validates a credential password with minimum requirements.
+     * Validate credential password (optional for updates).
+     * Only validates if password is provided (not null and not empty).
+     *
+     * @param password Password to validate (can be null/empty for updates)
+     * @param isRequired If true, password is required (for creation)
      */
-    public void validateCredentialPassword(String password) {
-        log.debug("Validating credential password (length: {} chars)",
-                password != null ? password.length() : 0);
+    public void validateCredentialPassword(String password, boolean isRequired) {
+        log.debug("Validating credential password (length: {} chars, required: {})",
+                password != null ? password.length() : 0, isRequired);
 
+        // If password is null or empty
         if (password == null || password.trim().isEmpty()) {
-            log.warn("Credential password validation failed: password is null or empty");
-            throw new IllegalArgumentException("Password is required");
+            if (isRequired) {
+                log.warn("Credential password validation failed: password is required but not provided");
+                throw new IllegalArgumentException("Password is required");
+            } else {
+                // Password is optional (update without changing password)
+                log.debug("Password not provided - skipping validation (optional update)");
+                return;
+            }
         }
+
+        // Validate length
         if (password.length() < 8) {
             log.warn("Credential password validation failed: password too short (length: {})",
                     password.length());
             throw new IllegalArgumentException("Password must be at least 8 characters");
         }
 
+        if (password.length() > 256) {
+            log.warn("Credential password validation failed: password too long (length: {})",
+                    password.length());
+            throw new IllegalArgumentException("Password must not exceed 256 characters");
+        }
+
         log.debug("Credential password validation passed");
+    }
+    /**
+     * Validate credential password (backward compatibility).
+     * Assumes password is required.
+     */
+    public void validateCredentialPassword(String password){
+        validateCredentialPassword(password, true);
     }
 
     /**

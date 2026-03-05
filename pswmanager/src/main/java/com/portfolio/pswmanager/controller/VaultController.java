@@ -35,6 +35,8 @@ import java.time.format.DateTimeFormatter;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,10 +53,25 @@ public class VaultController {
 
     @GetMapping("/vault")
     public String getVault(@RequestParam(required = false) String category, Model model, Authentication authentication, HttpSession session, HttpServletRequest request) {
+
+        log.info("=== VAULT ACCESS DEBUG ===");
+        log.info("Session ID: {}", session.getId());
+        log.info("Session creation time: {}", new Date(session.getCreationTime()));
+        log.info("Session last accessed: {}", new Date(session.getLastAccessedTime()));
+        log.info("Session attributes: {}", Collections.list(session.getAttributeNames()));
+
+        Object aesKeyObj = session.getAttribute("aesKey");
+        log.info("AES key in session: {}", aesKeyObj != null ? "PRESENT" : "NULL");
+        log.info("AES key class: {}", aesKeyObj != null ? aesKeyObj.getClass().getName() : "N/A");
+
+
         log.debug("Vault page accessed by user: {}", authentication.getName());
 
         User user = sessionService.getCurrentUser(authentication);
         SecretKey aesKey = sessionService.getAesKeyFromSession(session);
+        log.debug("Vault page accessed by user: {}", user.getUsername());
+
+        log.info("AES key in session: {}", aesKey != null ? "PRESENT" : "NULL");
 
         List<CredentialDTO> allCredentials = credentialService.getAllCredentialsForUser(user, aesKey);
 
@@ -192,6 +209,9 @@ public class VaultController {
             HttpServletRequest request  // Inject request
     ) {
         User user = sessionService.getCurrentUser(authentication);
+        SecretKey aesKey = sessionService.getAesKeyFromSession(session);
+
+        log.info("Edit credential request - ID: {}, user: {}", id, user.getUsername());
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
@@ -216,7 +236,6 @@ public class VaultController {
         }
 
         try {
-            SecretKey aesKey = sessionService.getAesKeyFromSession(session);
 
             credentialService.updateCredential(id, user, dto, aesKey);
 
@@ -232,9 +251,23 @@ public class VaultController {
                     auditService.getUserAgent(request)
             );
 
+            log.info("Credential edited successfully - ID: {}, user: {}", id, user.getUsername());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Credential updated successfully!");
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Edit credential failed - ID: {}, error: {}", id, e.getMessage());
+
+            auditService.logAction(
+                    user,
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    AuditLog.AuditStatus.FAILURE,
+                    "Failed to update credential: " + e.getMessage(),
+                    auditService.getClientIp(request),
+                    auditService.getUserAgent(request)
+            );
+
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             // Audit log failure
             auditService.logActionWithEntity(
@@ -377,7 +410,7 @@ public class VaultController {
     ) {
         try {
             User user = sessionService.getCurrentUser(authentication);
-            SecretKey aesKey = sessionService.getAesKeyFromSession(session);  // ✅ Usa la session key (stessa del login)
+            SecretKey aesKey = sessionService.getAesKeyFromSession(session);
 
             log.info("Importing vault for user: {} - replace: {}", user.getUsername(), replaceExisting);
 
