@@ -129,7 +129,7 @@ public class TwoFactorVerificationController {
                     System.arraycopy(combined, 16, keyBytes, 0, 32);
 
                     SecretKey aesKey = encryptionService.recreateKey(keyBytes);
-                    session.setAttribute("aesKey", aesKey);
+                    session.setAttribute("AES_KEY", aesKey);
 
                     log.debug("AES key stored in session for user: {}", user.getUsername());
 

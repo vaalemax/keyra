@@ -49,55 +49,37 @@
             to   { opacity: 1; transform: translateY(0);     }
         }
 
-        .vault-search {
-            display:       flex;
-            gap:           10px;
-            margin-bottom: 28px;
-            animation:     fadeDown .4s cubic-bezier(.22,1,.36,1) .06s both;
-        }
-        .vault-search__wrapper {
+        .input-wrapper {
             position: relative;
-            flex:      1;
-        }
-        .vault-search__icon {
-            position: absolute;
-            left:     14px;
-            top:      50%;
-            transform: translateY(-50%);
-            color:    var(--text-muted);
-            font-size: 1rem;
-            pointer-events: none;
-        }
-        .vault-search__input {
-            width:         100%;
-            background:    var(--bg-card);
-            border:        1px solid var(--border);
-            border-radius: var(--radius);
-            color:         var(--text-primary);
-            padding:       11px 14px 11px 40px;
-            font-size:     .9rem;
-            outline:       none;
-            transition:    border-color var(--transition), box-shadow var(--transition);
-        }
-        .vault-search__input::placeholder { color: var(--text-muted); }
-        .vault-search__input:focus {
-            border-color: var(--border-focus);
-            box-shadow:   0 0 0 3px var(--accent-glow);
+            display: flex;
+            align-items: center;
         }
 
-        .vault-search__filter {
-            background:    var(--bg-card);
-            border:        1px solid var(--border);
-            border-radius: var(--radius);
-            color:         var(--text-primary);
-            padding:       11px 14px;
-            font-size:     .88rem;
-            outline:       none;
-            cursor:        pointer;
-            transition:    border-color var(--transition);
-            min-width:     130px;
+        .input-wrapper input {
+            flex: 1;
+            padding-right: 48px; /* Spazio per il bottone */
         }
-        .vault-search__filter:focus { border-color: var(--border-focus); }
+
+        .input-action {
+            position: absolute;
+            right: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            transition: opacity 0.2s;
+            user-select: none;
+        }
+
+        .input-action:hover {
+            opacity: 0.7;
+        }
+
+        .input-action:active {
+            opacity: 0.5;
+        }
+
         .vault-search__filter option { background: var(--bg-card); }
 
         .vault-stats {
@@ -715,18 +697,6 @@
 <script>
 (function () {
 
-    window.togglePasswordVisibility = function (fieldId, btn) {
-        const input = document.getElementById(fieldId);
-        if (!input) {
-            console.error('Input field not found:', fieldId);
-            return;
-        }
-        const isHidden = input.type === 'password';
-        input.type      = isHidden ? 'text'  : 'password';
-        btn.textContent = isHidden ? '🙈'    : '👁';
-        btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-        input.focus();
-    };
 
     window.onCredPasswordInput = function () {
         const value = document.getElementById('credPassword').value;

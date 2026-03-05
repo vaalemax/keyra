@@ -60,7 +60,7 @@ public class VaultController {
         log.info("Session last accessed: {}", new Date(session.getLastAccessedTime()));
         log.info("Session attributes: {}", Collections.list(session.getAttributeNames()));
 
-        Object aesKeyObj = session.getAttribute("aesKey");
+        Object aesKeyObj = session.getAttribute("AES_KEY");
         log.info("AES key in session: {}", aesKeyObj != null ? "PRESENT" : "NULL");
         log.info("AES key class: {}", aesKeyObj != null ? aesKeyObj.getClass().getName() : "N/A");
 

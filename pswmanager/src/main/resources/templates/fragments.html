@@ -1126,6 +1126,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+/**
+ * Toggle password visibility
+ */
+function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) {
+        console.error('Input field not found:', fieldId);
+        return;
+    }
+
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+
+    // Update button icon
+    if (btn) {
+        btn.textContent = isPassword ? '🙈' : '👁';
+    }
+}
 </script>
 </div>
 

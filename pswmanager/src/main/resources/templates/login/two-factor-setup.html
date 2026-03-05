@@ -278,19 +278,33 @@
 <!-- Scripts -->
 <div th:replace="~{fragments :: scripts}"></div>
 
-<script>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  // ✅ Get data from Thymeleaf
+  const backupCodesData = /*[[${backupCodes}]]*/ [];
+  const usernameData = /*[[${username}]]*/ 'user';
+
+  console.log('Backup codes loaded:', backupCodesData);
+  console.log('Username:', usernameData);
+
   // Download backup codes as text file
   function downloadBackupCodes() {
-    const codes = /*[[${backupCodes}]]*/ [];
-    const username = /*[[${username}]]*/ 'user';
+    if (!backupCodesData || backupCodesData.length === 0) {
+      alert('No backup codes available');
+      console.error('Backup codes are empty or undefined');
+      return;
+    }
 
-    const content = `VaultShield - Backup Codes for ${username}
+    const codesText = backupCodesData.join('\n');
+
+    const content = `VaultShield - Backup Codes for ${usernameData}
 Generated: ${new Date().toLocaleString()}
 
 IMPORTANT: Save these codes in a safe place.
 Each code can only be used once.
 
-${codes.join('\n')}
+${codesText}
 
 Keep these codes secure and treat them like passwords.`;
 
@@ -298,17 +312,21 @@ Keep these codes secure and treat them like passwords.`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `vaultshield-backup-codes-${username}.txt`;
+    a.download = `vaultshield-backup-codes-${usernameData}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    console.log('Backup codes downloaded successfully');
   }
 
   // Auto-format verification code input
   document.getElementById('verifyCode').addEventListener('input', function(e) {
     this.value = this.value.replace(/\D/g, '').substring(0, 6);
   });
+
+  /*]]>*/
 </script>
 
 </body>

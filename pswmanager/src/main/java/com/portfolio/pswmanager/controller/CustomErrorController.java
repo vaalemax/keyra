@@ -23,23 +23,31 @@ public class CustomErrorController implements ErrorController {
 
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
+
             log.warn("HTTP Error {} occurred - URI: {}, Message: {}", statusCode, uri, message);
 
             model.addAttribute("statusCode", statusCode);
             model.addAttribute("uri", uri);
             model.addAttribute("message", message);
 
-            if (statusCode == 429 && retryAfter != null) {
-                model.addAttribute("retryAfter", retryAfter);
+            if (statusCode == 429) {
+                if (retryAfter != null) {
+                    model.addAttribute("retryAfter", retryAfter);
+                } else {
+                    // Try to calculate from current time
+                    model.addAttribute("retryAfter", 60); // Default
+                }
             }
 
-            return switch (statusCode) {
-                case 403 -> "error/403";
-                case 404 -> "error/404";
-                case 429 -> "error/429";
-                case 500 -> "error/500";
-                default -> "error/generic";
-            };
+            if(statusCode == 403) {
+                return "error/403";
+            }else if(statusCode == 404) {
+                return "error/404";
+            }else if(statusCode == 429) {
+                return "error/429";
+            }else if(statusCode == 500) {
+                return "error/500";
+            }
         }
 
         return "error/generic";

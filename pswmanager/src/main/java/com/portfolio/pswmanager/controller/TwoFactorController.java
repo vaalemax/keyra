@@ -45,7 +45,7 @@ public class TwoFactorController {
 
         model.addAttribute("twoFactorEnabled", user.isTwoFactorEnabled());
 
-        return "settings/two-factor";
+        return "login/two-factor";
     }
 
     /**
@@ -70,7 +70,7 @@ public class TwoFactorController {
         } catch (Exception e) {
             log.error("Error generating QR code", e);
             model.addAttribute("errorMessage", "Error generating QR code");
-            return "settings/two-factor";
+            return "login/two-factor";
         }
 
         // Generate backup codes
@@ -80,7 +80,7 @@ public class TwoFactorController {
         model.addAttribute("backupCodes", backupCodes);
         model.addAttribute("username", user.getUsername());
 
-        return "settings/two-factor-setup";
+        return "login/two-factor-setup";
     }
 
     /**

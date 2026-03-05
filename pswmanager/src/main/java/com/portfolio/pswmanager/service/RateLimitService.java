@@ -20,7 +20,7 @@ public class RateLimitService {
     private final Map<String, CopyOnWriteArrayList<Long>> requestTimestamps = new ConcurrentHashMap<>();
 
     private static final int NORMAL_LIMIT = 10;  // requests per minute
-    private static final int STRICT_LIMIT = 2;   // requests per minute
+    private static final int STRICT_LIMIT = 5;   // requests per minute
     private static final long WINDOW_MS = 60_000; // 1 minute
 
     /**

@@ -58,6 +58,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String ip = getClientIp(request);
 
+        if (uri.startsWith("/error/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Check if endpoint needs rate limiting
         boolean isStrict = STRICT_ENDPOINTS.contains(uri) && "POST".equals(method);
         boolean isProtected = PROTECTED_ENDPOINTS.contains(uri) && "POST".equals(method);
@@ -108,10 +113,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
             if (wantsHtml) {
                 // Redirect to error page
-                request.setAttribute("javax.servlet.error.status_code", 429);
-                request.setAttribute("javax.servlet.error.message", "Too many requests");
                 request.setAttribute("retryAfter", waitSeconds);
-                request.getRequestDispatcher("/error").forward(request, response);
+
+                // Use sendError instead of redirect
+                response.sendError(429, "Too many requests. Please try again in " + waitSeconds + " seconds.");
             } else {
                 // Return JSON for API requests
                 response.setContentType("application/json");
