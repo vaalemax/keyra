@@ -609,7 +609,7 @@
         .footer__links a:hover { color: var(--accent); }
     </style>
 
-    <p>&copy; <span th:text="${T(java.time.Year).now().getValue()}">2025</span> VaultShield. All the data is encrypted on the client side.</p>
+    <p>&copy; <span th:text="${T(java.time.Year).now().getValue()}">2026</span> VaultShield. All the data is encrypted on the client side.</p>
     <nav class="footer__links">
         <a href="#">Privacy</a>
         <a href="#">Terms</a>
@@ -634,64 +634,323 @@
 
 <div th:fragment="credentialCard(credential)" class="card credential-card">
     <style>
-        .credential-card .card-header { gap: 10px; }
+        /* ══════════════════════════════════════════════════════
+           CREDENTIAL CARD - Clean & Fixed Height Design
+           ══════════════════════════════════════════════════════ */
 
-        .credential-card__service-icon {
-            width: 36px; height: 36px;
-            background: var(--accent-glow);
-            border-radius: var(--radius);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
+        .credential-card {
+            display: flex;
+            flex-direction: column;
+            height: 280px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .credential-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ────────────────────────────────────────────────────
+           HEADER
+           ──────────────────────────────────────────────────── */
+        .credential-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
-        .credential-card__info { flex: 1; min-width: 0; }
-        .credential-card__service {
+
+        .credential-card__service-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-glow);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
             font-weight: 700;
-            font-size:   .95rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .credential-card__url {
-            font-size: .78rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: var(--accent);
+            flex-shrink: 0;
         }
 
-        .credential-card .card-body { display: flex; flex-direction: column; gap: 12px; }
+        .credential-card__info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .credential-card__title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0 0 2px 0;
+        }
+
+        .credential-card__category {
+            font-size: .75rem;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+
+        /* ────────────────────────────────────────────────────
+           BODY
+           ──────────────────────────────────────────────────── */
+        .credential-card .card-body {
+            display: flex;
+            flex-direction: column;
+            padding: 14px 20px;
+            flex: 1;
+            overflow: hidden;
+        }
 
         .credential-card__row {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 12px;
         }
+
+        .credential-card__row:last-of-type {
+            margin-bottom: 0;
+        }
+
         .credential-card__row label {
-            font-size:  .75rem;
-            color:      var(--text-muted);
-            width:      72px;
+            font-size: .72rem;
+            color: var(--text-muted);
+            width: 75px;
             flex-shrink: 0;
             text-transform: uppercase;
-            letter-spacing: .05em;
+            letter-spacing: .06em;
             font-weight: 600;
         }
-        .credential-card__row .value {
+
+        .credential-card__value {
             flex: 1;
-            font-size:   .88rem;
-            color:       var(--text-primary);
-            word-break:  break-all;
+            font-size: .88rem;
+            color: var(--text-primary);
+            min-width: 0;
         }
-        .credential-card__row .value.font-mono { font-size: .82rem; }
 
-        .password-dots { letter-spacing: 3px; font-size: 1rem; }
+        /* Username value */
+        .credential-card__value--username {
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
+        /* Password value */
+        .credential-card__value--password {
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            letter-spacing: 0.02em;
+            max-width: 140px;
+        }
+
+        .credential-card__value--password.password-hidden {
+            letter-spacing: 3px;
+            overflow: hidden;
+            max-width: none;
+        }
+
+        .credential-card__value--password::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .credential-card__value--password::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .credential-card__value--password::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* Date value */
+        .credential-card__value--date {
+            font-size: .82rem;
+            color: var(--text-muted);
+        }
+
+        /* ────────────────────────────────────────────────────
+           BUTTONS
+           ──────────────────────────────────────────────────── */
+        .credential-card__btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.05rem;
+            padding: 4px 6px;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .credential-card__btn:hover {
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .credential-card__btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ────────────────────────────────────────────────────
+           ACTIONS FOOTER
+           ──────────────────────────────────────────────────── */
         .credential-card__actions {
-            display:         flex;
-            justify-content: flex-end;
-            gap:             6px;
-            padding-top:     8px;
-            border-top:      1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .credential-card__actions-left {
+            display: flex;
+            gap: 6px;
+        }
+
+        .credential-card__actions-right {
+            display: flex;
+            gap: 6px;
+        }
+
+        .credential-card__actions .btn-sm {
+            padding: 7px 14px;
+            font-size: .8rem;
+            border-radius: var(--radius-sm);
+        }
+
+        /* ────────────────────────────────────────────────────
+           NOTES BADGE
+           ──────────────────────────────────────────────────── */
+        .credential-card__notes-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border-radius: 12px;
+            font-size: .7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .credential-card__notes-badge:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ────────────────────────────────────────────────────
+           NOTES MODAL
+           ──────────────────────────────────────────────────── */
+        .notes-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notes-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .notes-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .notes-modal-overlay.active .notes-modal {
+            transform: scale(1);
+        }
+
+        .notes-modal__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notes-modal__title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .notes-modal__close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        .notes-modal__close:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .notes-modal__body {
+            padding: 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .notes-modal__content {
+            font-size: .9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .notes-modal__body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notes-modal__body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
         }
     </style>
 
@@ -700,64 +959,79 @@
             <span th:text="${credential.serviceName.substring(0,1).toUpperCase()}">S</span>
         </div>
         <div class="credential-card__info">
-            <h3 class="credential-card__title" th:text="${credential.serviceName}">Service</h3>
+            <h3 class="credential-card__title" th:text="${credential.serviceName}">Service Name</h3>
             <span class="credential-card__category" th:text="${credential.category}">other</span>
         </div>
     </div>
 
     <div class="card-body">
         <div class="credential-card__row">
-            <label>Username</label>
-            <span class="value" th:text="${credential.username}">username</span>
+            <div class="credential-card__value credential-card__value--username"
+                 th:text="${credential.username}"
+                 th:title="${credential.username}">
+                username@example.com
+            </div>
         </div>
 
         <div class="credential-card__row">
             <label>Password</label>
-            <div class="value password-hidden">••••••••</div>
-            <button class="btn-reveal" onclick="revealPassword(this, '[[${credential.decryptedPassword}]]')">
+            <div class="credential-card__value credential-card__value--password password-hidden">
+                ••••••••
+            </div>
+            <button class="credential-card__btn"
+                    type="button"
+                    th:attr="data-password=${credential.decryptedPassword}"
+                    onclick="togglePasswordVisibilityCard(this)"
+                    title="Show/hide password">
                 👁
             </button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="copyPassword(this)"
-                    th:attr="data-password=${credential.decryptedPassword}" title="Copy">
+            <button class="credential-card__btn"
+                    type="button"
+                    th:attr="data-password=${credential.decryptedPassword}"
+                    onclick="copyPasswordCard(this)"
+                    title="Copy password">
                 📋
             </button>
         </div>
 
-        <div class="credential-card__row" th:if="${credential.notes != null and !credential.notes.isEmpty()}">
-            <label>Note</label>
-            <button type="button"
-                    class="btn btn-ghost btn-sm notes-toggle"
-                    onclick="toggleNotes(this)"
-                    title="Mostra/nascondi note">
-                📝 <span class="notes-toggle-text">Show</span>
-            </button>
-        </div>
-        <div class="credential-card__notes"
-             th:if="${credential.notes != null and !credential.notes.isEmpty()}"
-             style="display: none;">
-            <div class="notes-content" th:text="${credential.notes}"></div>
-        </div>
-
         <div class="credential-card__row">
-            <label>Creato</label>
-            <span class="value text-muted"
-                  th:text="${#temporals.format(credential.createdAt, 'dd MMM yyyy HH:mm')}">01 Gen 2025 14:30</span>
+            <label>Created</label>
+            <div class="credential-card__value credential-card__value--date"
+                 th:text="${#temporals.format(credential.createdAt, 'dd MMM yyyy')}">
+                05 Mar 2025
+            </div>
+        </div>
+    </div>
+    <div class="credential-card__actions">
+        <div class="credential-card__actions-left">
+            <!-- Notes badge (if notes exist) -->
+            <span th:if="${credential.notes != null and !credential.notes.isEmpty()}"
+                  class="credential-card__notes-badge"
+                  th:attr="data-notes=${credential.notes}, data-service=${credential.serviceName}"
+                  onclick="openNotesModal(this)"
+                  title="View notes">
+                📝 Notes
+            </span>
         </div>
 
-        <div class="credential-card__actions">
-            <button class="btn btn-sm btn-edit"
-                    th:data-cred-id="${credential.id}"
-                    th:data-cred-service="${credential.serviceName}"
-                    th:data-cred-username="${credential.username}"
-                    th:data-cred-url="${credential.url}"
-                    th:data-cred-category="${credential.category}"
-                    th:data-cred-notes="${credential.notes}"
+        <div class="credential-card__actions-right">
+            <button class="btn btn-sm btn-secondary"
+                    th:attr="data-cred-id=${credential.id},
+                             data-cred-service=${credential.serviceName},
+                             data-cred-username=${credential.username},
+                             data-cred-url=${credential.url},
+                             data-cred-category=${credential.category},
+                             data-cred-notes=${credential.notes}"
                     onclick="openEditModalFromCard(this)">
                 ✏ Edit
             </button>
-            <form th:action="@{/vault/delete/{id}(id=${credential.id})}" method="post" style="margin:0"
-                  onsubmit="return confirm('Delete this credential?')">
-                <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+            <form th:action="@{/vault/delete/{id}(id=${credential.id})}"
+                  method="post"
+                  style="margin:0; display:inline;"
+                  onsubmit="return confirm('⚠️ Delete this credential permanently?')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    🗑
+                </button>
             </form>
         </div>
     </div>
@@ -900,11 +1174,33 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     });
 });
 
-function copyPassword(btn) {
-    navigator.clipboard.writeText(btn.dataset.password).then(() => {
-        const orig = btn.textContent;
+/**
+ * Copy password from credential card
+ */
+function copyPasswordCard(btn) {
+    const password = btn.getAttribute('data-password');
+
+    if (!password) {
+        console.error('No password found');
+        return;
+    }
+
+    navigator.clipboard.writeText(password).then(() => {
+        const originalText = btn.textContent;
+        const originalTitle = btn.title;
+
         btn.textContent = '✓';
-        setTimeout(() => btn.textContent = orig, 1200);
+        btn.title = 'Copied!';
+        btn.style.color = 'var(--success)';
+
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.title = originalTitle;
+            btn.style.color = '';
+        }, 1500);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy password');
     });
 }
 
@@ -996,22 +1292,6 @@ function updateStrength(password, contextId) {
         label.classList.add('strength-' + level);
         const colors = { 1: 'var(--error)', 2: 'var(--warning)', 3: 'var(--accent)', 4: 'var(--success)' };
         label.style.color = colors[level];
-    }
-}
-
-function toggleNotes(btn) {
-    const card = btn.closest('.credential-card');
-    const notesDiv = card.querySelector('.credential-card__notes');
-    const toggleText = btn.querySelector('.notes-toggle-text');
-
-    if (notesDiv.style.display === 'none') {
-        notesDiv.style.display = 'block';
-        toggleText.textContent = 'Hide';
-        btn.setAttribute('aria-expanded', 'true');
-    } else {
-        notesDiv.style.display = 'none';
-        toggleText.textContent = 'Show';
-        btn.setAttribute('aria-expanded', 'false');
     }
 }
 
@@ -1130,19 +1410,89 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * Toggle password visibility
  */
-function togglePasswordVisibility(fieldId, btn) {
-    const input = document.getElementById(fieldId);
-    if (!input) {
-        console.error('Input field not found:', fieldId);
+function togglePasswordVisibilityCard(btn) {
+    const password = btn.getAttribute('data-password');
+    const valueDiv = btn.parentElement.querySelector('.credential-card__value--password');
+
+    if (!valueDiv || !password) {
+        console.error('Password elements not found');
         return;
     }
 
-    const isPassword = input.type === 'password';
-    input.type = isPassword ? 'text' : 'password';
+    const isHidden = valueDiv.classList.contains('password-hidden');
 
-    // Update button icon
-    if (btn) {
-        btn.textContent = isPassword ? '🙈' : '👁';
+    if (isHidden) {
+        valueDiv.textContent = password;
+        valueDiv.classList.remove('password-hidden');
+        btn.textContent = '🙈';
+        btn.title = 'Hide password';
+    } else {
+        valueDiv.textContent = '••••••••';
+        valueDiv.classList.add('password-hidden');
+        btn.textContent = '👁';
+        btn.title = 'Show password';
+    }
+}
+
+/**
+ * Open notes modal
+ */
+function openNotesModal(badge) {
+    const notes = badge.getAttribute('data-notes');
+    const serviceName = badge.getAttribute('data-service');
+
+    if (!notes) return;
+
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('credentialNotesModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'credentialNotesModal';
+        modal.className = 'notes-modal-overlay';
+        modal.innerHTML = `
+            <div class="notes-modal">
+                <div class="notes-modal__header">
+                    <h3 class="notes-modal__title" id="notesModalTitle">Notes</h3>
+                    <button class="notes-modal__close" onclick="closeNotesModal()">&times;</button>
+                </div>
+                <div class="notes-modal__body">
+                    <div class="notes-modal__content" id="notesModalContent"></div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Close on overlay click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeNotesModal();
+            }
+        });
+
+        // Close on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeNotesModal();
+            }
+        });
+    }
+
+    // Update content
+    document.getElementById('notesModalTitle').textContent = `Notes - ${serviceName}`;
+    document.getElementById('notesModalContent').textContent = notes;
+
+    // Show modal
+    modal.classList.add('active');
+}
+
+/**
+ * Close notes modal
+ */
+function closeNotesModal() {
+    const modal = document.getElementById('credentialNotesModal');
+    if (modal) {
+        modal.classList.remove('active');
     }
 }
 </script>
