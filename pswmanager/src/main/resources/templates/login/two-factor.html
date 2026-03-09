@@ -204,23 +204,6 @@
 <!-- Scripts -->
 <div th:replace="~{fragments :: scripts}"></div>
 
-<script>
-    function togglePasswordVisibility(fieldId, btn) {
-        const input = document.getElementById(fieldId);
-        if (!input) return;
-
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
-        btn.textContent = isHidden ? '🙈' : '👁';
-    }
-
-    // Confirm before disabling
-    document.getElementById('disable2faForm')?.addEventListener('submit', function(e) {
-        if (!confirm('⚠️ Are you sure you want to disable Two-Factor Authentication? This will make your account less secure.')) {
-            e.preventDefault();
-        }
-    });
-</script>
 
 </body>
 </html>
