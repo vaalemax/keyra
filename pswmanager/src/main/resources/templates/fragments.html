@@ -699,33 +699,11 @@
         /* ────────────────────────────────────────────────────
            BODY
            ──────────────────────────────────────────────────── */
-        .credential-card .card-body {
-            display: flex;
-            flex-direction: column;
-            padding: 14px 20px;
-            flex: 1;
-            overflow: hidden;
-        }
-
         .credential-card__row {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
-        }
-
-        .credential-card__row:last-of-type {
-            margin-bottom: 0;
-        }
-
-        .credential-card__row label {
-            font-size: .72rem;
-            color: var(--text-muted);
-            width: 75px;
-            flex-shrink: 0;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            font-weight: 600;
         }
 
         .credential-card__value {
@@ -735,16 +713,23 @@
             min-width: 0;
         }
 
-        /* Username value */
-        .credential-card__value--username {
-            font-family: var(--font-mono);
-            font-size: .85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .credential-card__row--password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        /* Password value */
+        .credential-card__row--password label {
+            font-size: .72rem;
+            color: var(--text-muted);
+            width: 75px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            font-weight: 600;
+        }
+
         .credential-card__value--password {
             font-family: var(--font-mono);
             font-size: .85rem;
@@ -752,13 +737,13 @@
             overflow-x: auto;
             overflow-y: hidden;
             letter-spacing: 0.02em;
-            max-width: 140px;
+            flex: 1;  /* ✅ Cambia questo */
+            min-width: 0;  /* ✅ Aggiungi questo */
         }
 
         .credential-card__value--password.password-hidden {
             letter-spacing: 3px;
             overflow: hidden;
-            max-width: none;
         }
 
         .credential-card__value--password::-webkit-scrollbar {
@@ -774,15 +759,11 @@
             border-radius: 2px;
         }
 
-        /* Date value */
-        .credential-card__value--date {
-            font-size: .82rem;
-            color: var(--text-muted);
+        .credential-card__value--password::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
 
-        /* ────────────────────────────────────────────────────
-           BUTTONS
-           ──────────────────────────────────────────────────── */
+        /* ✅ Bottoni con larghezza fissa per non muoversi */
         .credential-card__btn {
             background: transparent;
             border: none;
@@ -792,6 +773,11 @@
             color: var(--text-muted);
             transition: all 0.2s ease;
             flex-shrink: 0;
+            width: 32px; /* ✅ Larghezza fissa */
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .credential-card__btn:hover {
@@ -831,6 +817,25 @@
             padding: 7px 14px;
             font-size: .8rem;
             border-radius: var(--radius-sm);
+        }
+
+        .credential-card__value--password {
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            letter-spacing: 0.02em;
+            /* ✅ LARGHEZZA FISSA per evitare che i bottoni si muovano */
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .credential-card__value--password.password-hidden {
+            letter-spacing: 3px;
+            overflow: hidden;
         }
 
         /* ────────────────────────────────────────────────────
