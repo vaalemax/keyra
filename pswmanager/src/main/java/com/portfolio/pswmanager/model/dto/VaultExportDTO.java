@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * DTO for vault export/import.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,9 +18,6 @@ public class VaultExportDTO {
     private int credentialCount;
     private List<CredentialDTO> credentials;
 
-    /**
-     * Factory method to create export DTO.
-     */
     public static VaultExportDTO create(String username, List<CredentialDTO> credentials) {
         VaultExportDTO dto = new VaultExportDTO();
         dto.setVersion("1.0");

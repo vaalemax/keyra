@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-/**
- * DTO for displaying audit logs to users.
- */
 @Data
 @AllArgsConstructor
 public class AuditLogDTO {
