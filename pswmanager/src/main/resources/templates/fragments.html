@@ -641,7 +641,7 @@
         .credential-card {
             display: flex;
             flex-direction: column;
-            height: 280px;
+            height: 295px;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -699,33 +699,17 @@
         /* ────────────────────────────────────────────────────
            BODY
            ──────────────────────────────────────────────────── */
-        .credential-card .card-body {
-            display: flex;
-            flex-direction: column;
-            padding: 14px 20px;
-            flex: 1;
-            overflow: hidden;
-        }
-
         .credential-card__row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 12px;
         }
 
-        .credential-card__row:last-of-type {
-            margin-bottom: 0;
-        }
-
-        .credential-card__row label {
-            font-size: .72rem;
-            color: var(--text-muted);
-            width: 75px;
-            flex-shrink: 0;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            font-weight: 600;
+        .credential-card__btn-group {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
         }
 
         .credential-card__value {
@@ -735,16 +719,23 @@
             min-width: 0;
         }
 
-        /* Username value */
-        .credential-card__value--username {
-            font-family: var(--font-mono);
-            font-size: .85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .credential-card__row--password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        /* Password value */
+        .credential-card__row--password label {
+            font-size: .72rem;
+            color: var(--text-muted);
+            width: 75px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            font-weight: 600;
+        }
+
         .credential-card__value--password {
             font-family: var(--font-mono);
             font-size: .85rem;
@@ -752,13 +743,13 @@
             overflow-x: auto;
             overflow-y: hidden;
             letter-spacing: 0.02em;
-            max-width: 140px;
+            flex: 1;  /* ✅ Cambia questo */
+            min-width: 0;  /* ✅ Aggiungi questo */
         }
 
         .credential-card__value--password.password-hidden {
             letter-spacing: 3px;
             overflow: hidden;
-            max-width: none;
         }
 
         .credential-card__value--password::-webkit-scrollbar {
@@ -774,15 +765,11 @@
             border-radius: 2px;
         }
 
-        /* Date value */
-        .credential-card__value--date {
-            font-size: .82rem;
-            color: var(--text-muted);
+        .credential-card__value--password::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
 
-        /* ────────────────────────────────────────────────────
-           BUTTONS
-           ──────────────────────────────────────────────────── */
+        /* ✅ Bottoni con larghezza fissa per non muoversi */
         .credential-card__btn {
             background: transparent;
             border: none;
@@ -792,6 +779,11 @@
             color: var(--text-muted);
             transition: all 0.2s ease;
             flex-shrink: 0;
+            width: 32px; /* ✅ Larghezza fissa */
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .credential-card__btn:hover {
@@ -831,6 +823,25 @@
             padding: 7px 14px;
             font-size: .8rem;
             border-radius: var(--radius-sm);
+        }
+
+        .credential-card__value--password {
+            font-family: var(--font-mono);
+            font-size: .85rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            letter-spacing: 0.02em;
+            /* ✅ LARGHEZZA FISSA per evitare che i bottoni si muovano */
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .credential-card__value--password.password-hidden {
+            letter-spacing: 3px;
+            overflow: hidden;
         }
 
         /* ────────────────────────────────────────────────────
@@ -966,6 +977,7 @@
 
     <div class="card-body">
         <div class="credential-card__row">
+            <label>Username</label>
             <div class="credential-card__value credential-card__value--username"
                  th:text="${credential.username}"
                  th:title="${credential.username}">
@@ -978,20 +990,22 @@
             <div class="credential-card__value credential-card__value--password password-hidden">
                 ••••••••
             </div>
-            <button class="credential-card__btn"
-                    type="button"
-                    th:attr="data-password=${credential.decryptedPassword}"
-                    onclick="togglePasswordVisibilityCard(this)"
-                    title="Show/hide password">
-                👁
-            </button>
-            <button class="credential-card__btn"
-                    type="button"
-                    th:attr="data-password=${credential.decryptedPassword}"
-                    onclick="copyPasswordCard(this)"
-                    title="Copy password">
-                📋
-            </button>
+            <div class="credential-card__btn-group">
+                <button class="credential-card__btn"
+                        type="button"
+                        th:attr="data-password=${credential.decryptedPassword}"
+                        onclick="togglePasswordVisibilityCard(this)"
+                        title="Show/hide password">
+                    👁
+                </button>
+                <button class="credential-card__btn"
+                        type="button"
+                        th:attr="data-password=${credential.decryptedPassword}"
+                        onclick="copyPasswordCard(this)"
+                        title="Copy password">
+                    📋
+                </button>
+            </div>
         </div>
 
         <div class="credential-card__row">
@@ -1329,6 +1343,19 @@ function openEditModal(credentialData) {
     openModal('editCredentialModal');
 }
 
+function openEditModalFromCard(btn) {
+    const credentialData = {
+        id: btn.getAttribute('data-cred-id'),
+        serviceName: btn.getAttribute('data-cred-service'),
+        username: btn.getAttribute('data-cred-username'),
+        url: btn.getAttribute('data-cred-url') || '',
+        category: btn.getAttribute('data-cred-category'),
+        notes: btn.getAttribute('data-cred-notes') || ''
+    };
+
+    openEditModal(credentialData);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.navbar__menu a');
@@ -1412,7 +1439,8 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function togglePasswordVisibilityCard(btn) {
     const password = btn.getAttribute('data-password');
-    const valueDiv = btn.parentElement.querySelector('.credential-card__value--password');
+    const row = btn.closest('.credential-card__row');
+    const valueDiv = row.querySelector('.credential-card__value--password');
 
     if (!valueDiv || !password) {
         console.error('Password elements not found');
@@ -1494,6 +1522,15 @@ function closeNotesModal() {
     if (modal) {
         modal.classList.remove('active');
     }
+}
+
+function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.textContent = isHidden ? '🙈' : '👁';
 }
 </script>
 </div>

@@ -5,6 +5,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: Shellshell04
+      POSTGRES_DB: vaultshield  # ✅ Nome database
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
@@ -13,6 +14,12 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+    healthcheck:  # ✅ Health check per aspettare che sia pronto
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
@@ -24,6 +31,29 @@ services:
       - pgadmin:/var/lib/pgadmin
     ports:
       - "5050:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  # ✅ NUOVO: Spring Boot App
+  vaultshield-app:
+    container_name: vaultshield_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Database connection (usa il nome del service come hostname)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vaultshield
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # Altre configurazioni
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      postgres:
+        condition: service_healthy  # ✅ Aspetta che postgres sia pronto
     networks:
       - postgres
     restart: unless-stopped

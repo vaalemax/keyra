@@ -280,17 +280,5 @@
 
 <div th:replace="~{fragments :: scripts}"></div>
 
-<script>
-    function togglePasswordVisibility(fieldId, btn) {
-        const input  = document.getElementById(fieldId);
-        const isHidden = input.type === 'password';
-
-        input.type      = isHidden ? 'text' : 'password';
-        btn.textContent = isHidden ? '🙈'   : '👁';
-        btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-
-        input.focus();
-    }
-</script>
 </body>
 </html>

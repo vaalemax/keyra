@@ -92,13 +92,6 @@ public class ValidationService {
 
         log.debug("Credential password validation passed");
     }
-    /**
-     * Validate credential password (backward compatibility).
-     * Assumes password is required.
-     */
-    public void validateCredentialPassword(String password){
-        validateCredentialPassword(password, true);
-    }
 
     /**
      * Checks if a password is secure (for statistics).
