@@ -15,7 +15,7 @@ public class StrongMasterPasswordValidator implements ConstraintValidator<Strong
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
         if (password == null || password.isEmpty()) {
-            return true; // @NotBlank handles nulls
+            return true;
         }
 
         List<String> errors = validationService.validateMasterPassword(password);

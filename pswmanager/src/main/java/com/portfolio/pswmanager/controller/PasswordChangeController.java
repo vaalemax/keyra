@@ -26,9 +26,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.crypto.SecretKey;
 import java.util.List;
 
-/**
- * Controller for password change functionality.
- */
 @Controller
 @RequiredArgsConstructor
 public class PasswordChangeController {
@@ -40,18 +37,12 @@ public class PasswordChangeController {
     private final CredentialRepository credentialRepository;
     private final AuditService auditService;
 
-    /**
-     * Show password change page.
-     */
     @GetMapping("/settings/password")
     public String showPasswordChangePage(Model model) {
         model.addAttribute("passwordChangeRequest", new PasswordChangeRequest());
         return "password-change";
     }
 
-    /**
-     * Process password change request.
-     */
     @PostMapping("/settings/password")
     public String changePassword(
             @Valid @ModelAttribute PasswordChangeRequest request,
@@ -65,7 +56,6 @@ public class PasswordChangeController {
 
         log.info("Password change request from user: {}", user.getUsername());
 
-        // Check for validation errors
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldError() != null
                     ? bindingResult.getFieldError().getDefaultMessage()
@@ -87,7 +77,6 @@ public class PasswordChangeController {
             return "redirect:/settings/password";
         }
 
-        // Check if passwords match
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             log.warn("Password change failed - passwords don't match for user: {}", user.getUsername());
 
@@ -105,7 +94,6 @@ public class PasswordChangeController {
             return "redirect:/settings/password";
         }
 
-        // Check if new password is same as current
         if (request.getCurrentPassword().equals(request.getNewPassword())) {
             log.warn("Password change failed - new password same as current for user: {}",
                     user.getUsername());
@@ -116,16 +104,13 @@ public class PasswordChangeController {
         }
 
         try {
-            // Get current AES key from session
             SecretKey currentAesKey = sessionService.getAesKeyFromSession(session);
 
-            // Get all credentials
             List<Credential> allCredentials = credentialRepository.findByUserId(user.getId());
 
             log.debug("Found {} credentials to re-encrypt for user: {}",
                     allCredentials.size(), user.getUsername());
 
-            // Change password (this will re-encrypt all credentials)
             userService.changeMasterPassword(
                     user,
                     request.getCurrentPassword(),
@@ -134,7 +119,6 @@ public class PasswordChangeController {
                     currentAesKey
             );
 
-            // Audit log success
             auditService.logAction(
                     user,
                     AuditLog.AuditAction.PASSWORD_CHANGE,
@@ -146,7 +130,6 @@ public class PasswordChangeController {
 
             log.info("Password changed successfully for user: {}", user.getUsername());
 
-            // Invalidate session (force re-login with new password)
             session.invalidate();
 
             redirectAttributes.addFlashAttribute("successMessage",

@@ -23,9 +23,6 @@ import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.List;
 
-/**
- * Controller for 2FA verification during login.
- */
 @Controller
 @RequiredArgsConstructor
 public class TwoFactorVerificationController {
@@ -38,9 +35,6 @@ public class TwoFactorVerificationController {
     private final EncryptionService encryptionService;
     private final AuditService auditService;
 
-    /**
-     * Show 2FA verification page.
-     */
     @GetMapping("/login/2fa")
     public String show2FAVerification(HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("2FA_USER_ID");
@@ -58,9 +52,6 @@ public class TwoFactorVerificationController {
         return "login/two-factor-verify";
     }
 
-    /**
-     * Verify 2FA code.
-     */
     @PostMapping("/login/2fa/verify")
     public String verify2FA(
             @RequestParam String code,
@@ -85,21 +76,18 @@ public class TwoFactorVerificationController {
 
         try {
             if (useBackupCode) {
-                // Verify backup code
                 log.debug("Verifying backup code for user: {}", user.getUsername());
 
                 List<String> backupCodes = userService.getBackupCodes(user);
                 isValid = twoFactorService.verifyBackupCode(code.trim(), backupCodes);
 
                 if (isValid) {
-                    // Remove used backup code
                     List<String> updatedCodes = twoFactorService.removeBackupCode(code.trim(), backupCodes);
                     userService.updateBackupCodes(user, updatedCodes);
 
                     log.info("Backup code verified and removed for user: {} - remaining: {}",
                             user.getUsername(), updatedCodes.size());
 
-                    // Warn if running low on backup codes
                     if (updatedCodes.size() <= 2) {
                         session.setAttribute("warningMessage",
                                 "Warning: You have only " + updatedCodes.size() + " backup codes remaining.");
@@ -107,7 +95,6 @@ public class TwoFactorVerificationController {
                 }
 
             } else {
-                // Verify TOTP code
                 log.debug("Verifying TOTP code for user: {}", user.getUsername());
 
                 int totpCode = Integer.parseInt(code.trim());
@@ -115,10 +102,8 @@ public class TwoFactorVerificationController {
             }
 
             if (isValid) {
-                // 2FA verification successful
                 log.info("2FA verification successful for user: {}", user.getUsername());
 
-                // Derive and store AES key
                 try {
                     String encryptionKey = user.getEncryptionKey();
                     byte[] combined = Base64.getDecoder().decode(encryptionKey);
@@ -140,11 +125,9 @@ public class TwoFactorVerificationController {
                     return "redirect:/login";
                 }
 
-                // Clean up 2FA session attributes
                 session.removeAttribute("2FA_USER_ID");
                 session.removeAttribute("2FA_USERNAME");
 
-                // Audit log
                 auditService.logAction(
                         user,
                         AuditLog.AuditAction.LOGIN_SUCCESS,
@@ -157,7 +140,6 @@ public class TwoFactorVerificationController {
                 return "redirect:/vault";
 
             } else {
-                // Invalid code
                 log.warn("2FA verification failed - invalid code for user: {}", user.getUsername());
 
                 auditService.logAction(

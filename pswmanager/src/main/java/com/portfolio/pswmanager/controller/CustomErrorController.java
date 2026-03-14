@@ -34,8 +34,7 @@ public class CustomErrorController implements ErrorController {
                 if (retryAfter != null) {
                     model.addAttribute("retryAfter", retryAfter);
                 } else {
-                    // Try to calculate from current time
-                    model.addAttribute("retryAfter", 60); // Default
+                    model.addAttribute("retryAfter", 60);
                 }
             }
 

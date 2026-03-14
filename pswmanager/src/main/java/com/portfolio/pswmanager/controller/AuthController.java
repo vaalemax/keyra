@@ -32,13 +32,11 @@ public class AuthController {
     ) {
         log.info("Registration request received for username: {}", request.getUsername());
 
-        // Bean Validation errors
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Invalid data";
 
             log.warn("Registration validation failed for username: {} - Error: {}", request.getUsername(), errorMessage);
 
-            // Audit log failure (no user yet, so pass null)
             auditService.logAction(
                     null,
                     AuditLog.AuditAction.REGISTER,
@@ -58,7 +56,6 @@ public class AuthController {
 
             log.info("Registration successful for username: {}", request.getUsername());
 
-            // Audit log success (user created, but not logged in yet - pass null)
             auditService.logAction(
                     null,
                     AuditLog.AuditAction.REGISTER,
@@ -74,7 +71,6 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             log.warn("Registration failed for username: {} - Reason: {}", request.getUsername(), e.getMessage());
 
-            // Audit log failure
             auditService.logAction(
                     null,
                     AuditLog.AuditAction.REGISTER,
@@ -91,7 +87,6 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Unexpected error during registration for username: {}", request.getUsername(), e);
 
-            // Audit log system error
             auditService.logAction(
                     null,
                     AuditLog.AuditAction.SYSTEM_ERROR,
