@@ -5,10 +5,6 @@ import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
-/**
- * Validation to verify that password and confirmPassword match.
- * Applied at class level (TYPE) to access both fields.
- */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PasswordsMatchValidator.class)

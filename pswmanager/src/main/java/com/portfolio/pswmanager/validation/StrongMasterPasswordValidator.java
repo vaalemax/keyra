@@ -7,9 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-/**
- * Validator that delegates logic to ValidationService.
- */
 public class StrongMasterPasswordValidator implements ConstraintValidator<StrongMasterPassword, String> {
 
     @Autowired
@@ -18,16 +15,14 @@ public class StrongMasterPasswordValidator implements ConstraintValidator<Strong
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
         if (password == null || password.isEmpty()) {
-            return true; // @NotBlank handles nulls
+            return true;
         }
 
         List<String> errors = validationService.validateMasterPassword(password);
 
         if (!errors.isEmpty()) {
-            // disable default message
             context.disableDefaultConstraintViolation();
 
-            // add all errors
             String errorMessage = "Master password " + String.join(", ", errors);
             context.buildConstraintViolationWithTemplate(errorMessage).addConstraintViolation();
 

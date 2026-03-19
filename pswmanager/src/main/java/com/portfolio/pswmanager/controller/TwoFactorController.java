@@ -20,9 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-/**
- * Controller for Two-Factor Authentication management.
- */
 @Controller
 @RequiredArgsConstructor
 public class TwoFactorController {
@@ -34,9 +31,7 @@ public class TwoFactorController {
     private final SessionService sessionService;
     private final AuditService auditService;
 
-    /**
-     * Show 2FA setup page.
-     */
+
     @GetMapping("/settings/2fa")
     public String show2FASettings(Authentication authentication, Model model) {
         User user = sessionService.getCurrentUser(authentication);
@@ -48,22 +43,16 @@ public class TwoFactorController {
         return "login/two-factor";
     }
 
-    /**
-     * Start 2FA setup process (generate secret and QR code).
-     */
     @GetMapping("/settings/2fa/setup")
     public String setup2FA(Authentication authentication, Model model) {
         User user = sessionService.getCurrentUser(authentication);
 
         log.info("Starting 2FA setup for user: {}", user.getUsername());
 
-        // Generate secret
         String secret = twoFactorService.generateSecret();
 
-        // Generate QR code URL
         String qrCodeUrl = twoFactorService.generateQrCodeUrl(user.getUsername(), secret);
 
-        // Generate QR code image
         try {
             String qrCodeImage = twoFactorService.generateQrCodeImage(qrCodeUrl);
             model.addAttribute("qrCodeImage", qrCodeImage);
@@ -73,7 +62,6 @@ public class TwoFactorController {
             return "login/two-factor";
         }
 
-        // Generate backup codes
         List<String> backupCodes = twoFactorService.generateBackupCodes();
 
         model.addAttribute("secret", secret);
@@ -83,9 +71,6 @@ public class TwoFactorController {
         return "login/two-factor-setup";
     }
 
-    /**
-     * Verify and enable 2FA.
-     */
     @PostMapping("/settings/2fa/enable")
     public String enable2FA(
             @RequestParam String secret,
@@ -100,7 +85,6 @@ public class TwoFactorController {
         log.info("Enabling 2FA for user: {}", user.getUsername());
 
         try {
-            // Verify the TOTP code
             int totpCode = Integer.parseInt(code);
             boolean isValid = twoFactorService.verifyCode(secret, totpCode);
 
@@ -121,16 +105,13 @@ public class TwoFactorController {
                 return "redirect:/settings/2fa/setup";
             }
 
-            // Parse backup codes
             List<String> backupCodesList = List.of(backupCodes.split(","));
 
-            // Enable 2FA
             userService.enableTwoFactor(user, secret, backupCodesList);
 
-            // Audit log
             auditService.logAction(
                     user,
-                    AuditLog.AuditAction.TWO_FA_ENABLED,  // or create 2FA_ENABLED action
+                    AuditLog.AuditAction.TWO_FA_ENABLED,
                     AuditLog.AuditStatus.SUCCESS,
                     "Two-Factor Authentication enabled",
                     auditService.getClientIp(request),
@@ -157,9 +138,6 @@ public class TwoFactorController {
         return "redirect:/settings/2fa";
     }
 
-    /**
-     * Disable 2FA.
-     */
     @PostMapping("/settings/2fa/disable")
     public String disable2FA(
             @RequestParam String password,
@@ -171,7 +149,6 @@ public class TwoFactorController {
 
         log.info("Disabling 2FA for user: {}", user.getUsername());
 
-        // Verify password before disabling
         if (!userService.verifyPassword(user, password)) {
             log.warn("2FA disable failed - incorrect password for user: {}", user.getUsername());
 
@@ -180,13 +157,11 @@ public class TwoFactorController {
             return "redirect:/settings/2fa";
         }
 
-        // Disable 2FA
         userService.disableTwoFactor(user);
 
-        // Audit log
         auditService.logAction(
                 user,
-                AuditLog.AuditAction.TWO_FA_DISABLED,  // or create 2FA_DISABLED action
+                AuditLog.AuditAction.TWO_FA_DISABLED,
                 AuditLog.AuditStatus.SUCCESS,
                 "Two-Factor Authentication disabled",
                 auditService.getClientIp(request),

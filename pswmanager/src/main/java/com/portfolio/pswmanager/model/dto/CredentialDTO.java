@@ -14,7 +14,7 @@ public class CredentialDTO{
     @Size(min = 2, max = 100, message = "Service name needs between 2-100 characters")
     private String serviceName;
 
-    @NotBlank(message = "L'username è obbligatorio")
+    @NotBlank(message = "Username is required")
     @Size(min = 2, max = 100, message = "Username needs between 2-100 characters")
     private String username;
 
