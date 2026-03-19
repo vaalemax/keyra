@@ -20,11 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Service for audit logging.
- * All audit operations are executed asynchronously and in separate transactions
- * to avoid impacting main application flow.
- */
 @Service
 @RequiredArgsConstructor
 public class AuditService {
@@ -33,10 +28,6 @@ public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
-    /**
-     * Logs a user action.
-     * Executed asynchronously to not block the main thread.
-     */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logAction(
@@ -72,9 +63,7 @@ public class AuditService {
         }
     }
 
-    /**
-     * Logs an action with entity reference (e.g., credential ID).
-     */
+    // logs an action with entity reference (e.g., credential ID)
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logActionWithEntity(
@@ -114,9 +103,6 @@ public class AuditService {
         }
     }
 
-    /**
-     * Logs a failed login attempt (user may not exist).
-     */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logFailedLogin(
@@ -143,65 +129,13 @@ public class AuditService {
         }
     }
 
-    /**
-     * Retrieves audit logs for a specific user.
-     */
     @Transactional(readOnly = true)
     public Page<AuditLog> getUserAuditLogs(Long userId, Pageable pageable) {
         log.debug("Retrieving audit logs for user ID: {}", userId);
         return auditLogRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
     }
 
-    /**
-     * Retrieves recent audit logs for a user (last 10).
-     */
-    @Transactional(readOnly = true)
-    public List<AuditLog> getRecentUserAuditLogs(Long userId) {
-        log.debug("Retrieving recent audit logs for user ID: {}", userId);
-        return auditLogRepository.findTop10ByUserIdOrderByTimestampDesc(userId);
-    }
-
-    /**
-     * Checks for suspicious activity (e.g., multiple failed logins).
-     */
-    @Transactional(readOnly = true)
-    public boolean hasSuspiciousActivity(String username, int maxAttempts, int timeWindowMinutes) {
-        LocalDateTime since = LocalDateTime.now().minusMinutes(timeWindowMinutes);
-        List<AuditLog> failedAttempts = auditLogRepository.findFailedLoginAttempts(username, since);
-
-        boolean suspicious = failedAttempts.size() >= maxAttempts;
-
-        if (suspicious) {
-            log.warn("Suspicious activity detected for username: {} - {} failed login attempts in {} minutes",
-                    username, failedAttempts.size(), timeWindowMinutes);
-        }
-
-        return suspicious;
-    }
-
-    /**
-     * Cleanup old audit logs (run periodically via scheduled task).
-     */
-    @Transactional
-    public void cleanupOldLogs(int retentionDays) {
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
-        log.info("Cleaning up audit logs older than {} days", retentionDays);
-
-        try {
-            auditLogRepository.deleteByTimestampBefore(cutoffDate);
-            log.info("Audit log cleanup completed");
-        } catch (Exception e) {
-            log.error("Error during audit log cleanup", e);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // UTILITY METHODS
-    // ═══════════════════════════════════════════════════════
-
-    /**
-     * Extracts IP address from HTTP request.
-     */
+    // extracts IP address from HTTP request
     public String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -217,9 +151,7 @@ public class AuditService {
         return ip;
     }
 
-    /**
-     * Extracts User-Agent from HTTP request.
-     */
+    // extracts User-Agent from HTTP request
     public String getUserAgent(HttpServletRequest request) {
         String userAgent = request.getHeader("User-Agent");
         // Truncate if too long
@@ -229,9 +161,7 @@ public class AuditService {
         return userAgent;
     }
 
-    /**
-     * Get action statistics (count by action type).
-     */
+    // count by action type)
     @Transactional(readOnly = true)
     public Map<String, Long> getActionStatistics(Long userId) {
         log.debug("Calculating action statistics for user ID: {}", userId);
@@ -248,9 +178,6 @@ public class AuditService {
                 ));
     }
 
-    /**
-     * Get daily activity statistics for the last N days.
-     */
     @Transactional(readOnly = true)
     public Map<String, Long> getDailyActivityStats(Long userId, int days) {
         log.debug("Calculating daily activity stats for user ID: {} (last {} days)", userId, days);
