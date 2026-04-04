@@ -9,278 +9,10 @@
     <title>My Vault – VaultShield</title>
 
     <style th:replace="~{fragments :: styles}"></style>
+    <link rel="stylesheet" th:href="@{/static/css/vault.css}">
 
-    <style>
-        .vault-page {
-            flex: 1;
-            max-width: 900px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 32px 24px 48px;
-        }
-
-        .vault-header {
-            display:         flex;
-            align-items:     center;
-            justify-content: space-between;
-            margin-bottom:   24px;
-            flex-wrap:       wrap;
-            gap:             12px;
-            animation:       fadeDown .4s cubic-bezier(.22,1,.36,1) both;
-        }
-        .vault-header__left { display: flex; flex-direction: column; gap: 4px; }
-        .vault-header__title {
-            font-size:      1.45rem;
-            font-weight:    700;
-            color:          var(--text-primary);
-            letter-spacing: -.02em;
-        }
-        .vault-header__subtitle {
-            font-size: .82rem;
-            color:     var(--text-muted);
-        }
-        .vault-header__subtitle .count {
-            color:      var(--accent);
-            font-weight: 700;
-        }
-
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0);     }
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
-            flex: 1;
-            padding-right: 48px; /* Spazio per il bottone */
-        }
-
-        .input-action {
-            position: absolute;
-            right: 8px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 4px 8px;
-            transition: opacity 0.2s;
-            user-select: none;
-        }
-
-        .input-action:hover {
-            opacity: 0.7;
-        }
-
-        .input-action:active {
-            opacity: 0.5;
-        }
-
-        .vault-search__filter option { background: var(--bg-card); }
-
-        .vault-stats {
-            display:       grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap:           12px;
-            margin-bottom: 28px;
-            animation:     fadeDown .4s cubic-bezier(.22,1,.36,1) .10s both;
-        }
-        .vault-stat {
-            background:    var(--bg-card);
-            border:        1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding:       16px 18px;
-            display:       flex;
-            align-items:   center;
-            gap:           14px;
-        }
-        .vault-stat__icon {
-            width: 38px; height: 38px;
-            border-radius: var(--radius);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .vault-stat__icon--total   { background: var(--accent-glow); }
-        .vault-stat__icon--secure  { background: var(--success-bg);  }
-        .vault-stat__icon--weak    { background: var(--warning-bg);  }
-
-        .vault-stat__info { display: flex; flex-direction: column; gap: 1px; }
-        .vault-stat__value {
-            font-size:   1.3rem;
-            font-weight: 700;
-            color:       var(--text-primary);
-            line-height: 1.2;
-        }
-        .vault-stat__label {
-            font-size: .75rem;
-            color:     var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-        }
-
-        .vault-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
-            grid-auto-flow: dense;
-        }
-
-        .vault-grid > .card {
-            animation: cardIn .45s cubic-bezier(.22,1,.36,1) both;
-        }
-        .vault-grid > .card:nth-child(1)  { animation-delay: .18s; }
-        .vault-grid > .card:nth-child(2)  { animation-delay: .24s; }
-        .vault-grid > .card:nth-child(3)  { animation-delay: .30s; }
-        .vault-grid > .card:nth-child(4)  { animation-delay: .36s; }
-        .vault-grid > .card:nth-child(5)  { animation-delay: .42s; }
-        .vault-grid > .card:nth-child(n+6){ animation-delay: .48s; }
-
-        .vault-grid > div[style*="display: none"] {
-            display: none !important;
-            grid-column: auto;
-            grid-row: auto;
-        }
-
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0);    }
-        }
-
-        .vault-empty {
-            grid-column:   1 / -1;
-            text-align:    center;
-            padding:       64px 24px;
-            animation:     fadeDown .5s cubic-bezier(.22,1,.36,1) .2s both;
-        }
-        .vault-empty__icon {
-            font-size:  3.5rem;
-            margin-bottom: 18px;
-            display:    block;
-            animation:  emptyFloat 3s ease-in-out infinite;
-        }
-        @keyframes emptyFloat {
-            0%, 100% { transform: translateY(0);   }
-            50%      { transform: translateY(-6px); }
-        }
-        .vault-empty__title {
-            font-size:   1.15rem;
-            font-weight: 600;
-            color:       var(--text-primary);
-            margin-bottom: 6px;
-        }
-        .vault-empty__desc {
-            font-size: .85rem;
-            color:     var(--text-muted);
-            max-width: 340px;
-            margin:    0 auto 22px;
-            line-height: 1.5;
-        }
-
-        .new-cred-form .form-group { margin-bottom: 16px; }
-
-        .new-cred-form .password-row {
-            display: flex;
-            gap:     8px;
-            align-items: flex-end;
-        }
-        .new-cred-form .password-row .form-group { flex: 1; margin-bottom: 0; }
-        .new-cred-form .password-row .btn-gen {
-            flex-shrink: 0;
-            height:      42px;
-            white-space: nowrap;
-        }
-
-        .new-cred-form .modal-actions {
-            display:         flex;
-            justify-content: flex-end;
-            gap:             10px;
-            margin-top:      22px;
-            padding-top:     18px;
-            border-top:      1px solid var(--border);
-        }
-
-        .new-cred-form .strength-wrapper { margin-top: 8px; margin-bottom: 4px; }
-
-        .btn-primary:disabled {
-            opacity:    0.4;
-            cursor:     not-allowed;
-            box-shadow: none;
-        }
-        .btn-primary:disabled:hover { box-shadow: none; }
-
-        @media (max-width: 680px) {
-            .vault-page        { padding: 20px 16px 40px; }
-            .vault-stats       { grid-template-columns: 1fr 1fr; }
-            .vault-grid        { grid-template-columns: 1fr; }
-            .vault-search      { flex-direction: column; }
-            .vault-search__filter { min-width: 100%; }
-        }
-        @media (max-width: 380px) {
-            .vault-stats { grid-template-columns: 1fr; }
-        }
-
-
-        .vault-filters {
-            display: flex;
-            gap: 20px;
-            align-items: flex-end;
-            margin-bottom: 24px;
-            padding: 20px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-group label {
-            font-size: .85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .filter-select,
-        .filter-input {
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: .95rem;
-            transition: all 0.2s ease;
-        }
-
-        .filter-select:focus,
-        .filter-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .filter-select {
-            cursor: pointer;
-        }
-
-
-        .no-results-message {
-            grid-column: 1 / -1;
-        }
-    </style>
 
     <script th:src="@{/js/session-timeout.js}"></script>
-    <!-- Data attribute per indicare che la pagina è autenticata -->
     <script>document.body.dataset.authenticated = 'true';</script>
 </head>
 
@@ -298,16 +30,13 @@
         </span>
         </div>
 
-        <!-- ✅ NUOVA SEZIONE: Bottoni Export/Import/Add -->
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <!-- Export button -->
             <a th:href="@{/vault/export}"
                class="btn btn-secondary"
                title="Export vault">
                 📦 Export
             </a>
 
-            <!-- Import button -->
             <button type="button"
                     class="btn btn-secondary"
                     onclick="openModal('importVaultModal')"
@@ -315,7 +44,6 @@
                 📥 Import
             </button>
 
-            <!-- Add new credential -->
             <button type="button"
                     class="btn btn-primary"
                     onclick="openModal('newCredentialModal')">
@@ -491,27 +219,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="credCategory">Categoria</label>
+                    <label for="credCategory">Category</label>
                     <select id="credCategory" name="category">
-                        <option value="other">Altro</option>
+                        <option value="other">Other</option>
                         <option value="email">Email</option>
                         <option value="social">Social Media</option>
                         <option value="banking">Banking</option>
-                        <option value="work">Lavoro</option>
+                        <option value="work">Work</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="credNotes">Note</label>
-                    <textarea id="credNotes" name="notes" placeholder="Note aggiuntive…"></textarea>
+                    <label for="credNotes">Notes</label>
+                    <textarea id="credNotes" name="notes" placeholder="Other notes…"></textarea>
                 </div>
 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('newCredentialModal')">
-                        Cancella
+                        Cancel
                     </button>
                     <button type="submit" class="btn btn-primary" id="submitNewCred" disabled>
-                        Salva Credenziale
+                        Save Credential
                     </button>
                 </div>
             </form>
@@ -627,7 +355,6 @@
 
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                <!-- Info message -->
                 <div class="alert alert-warning" style="margin-bottom: 18px;">
                     <span class="alert-icon">⚠️</span>
                     <div>
@@ -636,7 +363,6 @@
                     </div>
                 </div>
 
-                <!-- File input -->
                 <div class="form-group">
                     <label for="importFile">Select backup file</label>
                     <input type="file"
@@ -650,7 +376,6 @@
                     </small>
                 </div>
 
-                <!-- Replace option -->
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none;">
                         <input type="checkbox"
@@ -666,7 +391,6 @@
                     </small>
                 </div>
 
-                <!-- File info (shown after selection) -->
                 <div id="fileInfo" style="display: none; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 12px;">
                     <div style="font-size: .85rem; color: var(--text-secondary);">
                         <strong>Selected file:</strong> <span id="fileName"></span><br>
@@ -674,7 +398,6 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('importVaultModal')">
                         Cancel
@@ -688,232 +411,10 @@
     </div>
 </div>
 
-<!-- ── Password Generator modal (fragment) ── -->
 <div th:replace="~{fragments :: passwordGenerator}"></div>
 
-<!-- ── Shared scripts from fragment ── -->
 <div th:replace="~{fragments :: scripts}"></div>
+<script th:src="@{/static/js/vault.js}"></script>
 
-<script>
-(function () {
-
-
-    window.onCredPasswordInput = function () {
-        const value = document.getElementById('credPassword').value;
-        if (typeof updateStrength === 'function') {
-            updateStrength(value, 'cred');
-        }
-        validateNewCredForm();
-    };
-
-    window.validateNewCredForm = function () {
-        const serviceName = document.getElementById('serviceName').value.trim();
-        const username    = document.getElementById('credUsername').value.trim();
-        const password    = document.getElementById('credPassword').value;
-        const btn         = document.getElementById('submitNewCred');
-
-        btn.disabled = !(serviceName && username && password);
-    };
-
-    window.addEventListener('message', function (event) {
-        if (event.origin !== window.location.origin) return;
-        if (event.data && event.data.type === 'password-generated') {
-            const pwdField = document.getElementById('credPassword');
-            if (pwdField && document.getElementById('newCredentialModal').classList.contains('active')) {
-                pwdField.value = event.data.password;
-                onCredPasswordInput();
-            }
-        }
-    });
-
-
-    window.filterCredentials = function () {
-        const query    = document.getElementById('searchInput').value.toLowerCase().trim();
-        const category = document.getElementById('filterSelect').value;
-        const cards    = document.querySelectorAll('.vault-grid .credential-card');
-
-        cards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-
-            const matchesQuery = query === '' || text.includes(query);
-
-            const cardCategory = card.dataset.category || 'other';
-            const matchesCategory = category === 'all' || cardCategory === category;
-
-            card.style.display = (matchesQuery && matchesCategory) ? '' : 'none';
-        });
-
-        const visibleCards = document.querySelectorAll('.vault-grid .credential-card:not([style*="none"])');
-        let emptyFilter = document.getElementById('emptyFilterMsg');
-
-        if (visibleCards.length === 0 && cards.length > 0) {
-            if (!emptyFilter) {
-                emptyFilter = document.createElement('div');
-                emptyFilter.id = 'emptyFilterMsg';
-                emptyFilter.className = 'vault-empty';
-                emptyFilter.innerHTML = `
-                    <span class="vault-empty__icon" style="animation:none">🔍</span>
-                    <div class="vault-empty__title">No result</div>
-                    <p class="vault-empty__desc">No credentials match the active filters. Try modifying them.</p>
-                `;
-                document.getElementById('credentialGrid').appendChild(emptyFilter);
-            }
-            emptyFilter.style.display = '';
-        } else if (emptyFilter) {
-            emptyFilter.style.display = 'none';
-        }
-    };
-
-    const originalClose = window.closeModal;
-    window.closeModal = function (id) {
-        originalClose(id);
-        if (id === 'newCredentialModal') {
-            document.getElementById('newCredForm').reset();
-            document.getElementById('submitNewCred').disabled = true;
-            if (typeof updateStrength === 'function') {
-                updateStrength('', 'cred');
-            }
-        }
-    };
-
-    window.openEditModal = function(credentialData) {
-        document.getElementById('editCredId').value = credentialData.id;
-        document.getElementById('editServiceName').value = credentialData.serviceName;
-        document.getElementById('editServiceUrl').value = credentialData.url || '';
-        document.getElementById('editUsername').value = credentialData.username;
-        document.getElementById('editPassword').value = '';
-        document.getElementById('editCategory').value = credentialData.category;
-        document.getElementById('editNotes').value = credentialData.notes || '';
-
-        const form = document.getElementById('editCredForm');
-        form.action = `/vault/edit/${credentialData.id}`;
-
-        openModal('editCredentialModal');
-    };
-
-})();
-
-function filterByCategory(category) {
-    if (category === 'all') {
-        window.location.href = '/vault';
-    } else {
-        window.location.href = '/vault?category=' + encodeURIComponent(category);
-    }
-}
-
-function searchCredentials(query) {
-    const grid = document.querySelector('.vault-grid');
-    if (!grid) return;
-
-    const wrappers = Array.from(grid.querySelectorAll(':scope > div'));
-    const searchTerm = query.toLowerCase().trim();
-
-    let visibleCount = 0;
-    const visible = [];
-    const hidden = [];
-
-    wrappers.forEach(wrapper => {
-        if (wrapper.classList.contains('vault-empty') ||
-            wrapper.id === 'noResultsMessage') {
-            return;
-        }
-
-        const text = wrapper.textContent.toLowerCase();
-        const matches = searchTerm === '' || text.includes(searchTerm);
-
-        if (matches) {
-            wrapper.style.display = '';
-            visible.push(wrapper);
-            visibleCount++;
-        } else {
-            wrapper.style.display = 'none';
-            hidden.push(wrapper);
-        }
-    });
-
-    visible.forEach(wrapper => grid.appendChild(wrapper));
-    hidden.forEach(wrapper => grid.appendChild(wrapper));
-
-    updateNoResultsMessage(visibleCount, searchTerm);
-}
-
-function updateNoResultsMessage(visibleCount, searchTerm) {
-    let noResultsMsg = document.getElementById('noResultsMessage');
-    const grid = document.querySelector('.vault-grid');
-
-    if (visibleCount === 0 && searchTerm !== '') {
-        if (!noResultsMsg) {
-            noResultsMsg = document.createElement('div');
-            noResultsMsg.id = 'noResultsMessage';
-            noResultsMsg.className = 'vault-empty';
-            noResultsMsg.style.gridColumn = '1 / -1';
-            grid.appendChild(noResultsMsg);
-        }
-
-        noResultsMsg.innerHTML = `
-            <span class="vault-empty__icon" style="animation:none">🔍</span>
-            <div class="vault-empty__title">No credentials found</div>
-            <p class="vault-empty__desc">
-                No matches for "<strong>${escapeHtml(searchTerm)}</strong>".
-                Try a different search term.
-            </p>
-        `;
-        noResultsMsg.style.display = '';
-    } else if (noResultsMsg) {
-        noResultsMsg.style.display = 'none';
-    }
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ═══════════════════════════════════════════════════════
-// IMPORT VAULT FUNCTIONALITY
-// ═══════════════════════════════════════════════════════
-
-// Handle file selection
-document.getElementById('importFile')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    const submitBtn = document.getElementById('importSubmitBtn');
-    const fileInfo = document.getElementById('fileInfo');
-
-    if (file) {
-        // Show file info
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = formatFileSize(file.size);
-        fileInfo.style.display = 'block';
-
-        // Enable submit button
-        submitBtn.disabled = false;
-    } else {
-        fileInfo.style.display = 'none';
-        submitBtn.disabled = true;
-    }
-});
-
-// Format file size
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
-// Confirm before replace
-document.getElementById('importForm')?.addEventListener('submit', function(e) {
-    const replaceCheckbox = document.getElementById('replaceExisting');
-
-    if (replaceCheckbox && replaceCheckbox.checked) {
-        if (!confirm('⚠️ This will DELETE ALL your current credentials and replace them with the imported ones. Are you sure?')) {
-            e.preventDefault();
-            return false;
-        }
-    }
-});
-</script>
 </body>
 </html>
