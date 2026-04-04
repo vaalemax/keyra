@@ -5,171 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Setup 2FA – VaultShield</title>
   <style th:replace="~{fragments :: styles}"></style>
+  <link rel="stylesheet" th:href="@{/static/css/login/two-factor-setup.css}">
 
-  <style>
-    .setup-page {
-      flex: 1;
-      max-width: 700px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 40px 24px;
-    }
-
-    .setup-header {
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .setup-header__title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .setup-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      box-shadow: var(--shadow-card);
-    }
-
-    .setup-step {
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .setup-step:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    .step-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      background: var(--accent);
-      color: white;
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: .9rem;
-      margin-right: 12px;
-    }
-
-    .step-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-    }
-
-    .qr-code {
-      display: flex;
-      justify-content: center;
-      margin: 24px 0;
-      padding: 20px;
-      background: white;
-      border-radius: var(--radius);
-    }
-
-    .qr-code img {
-      max-width: 300px;
-      width: 100%;
-      height: auto;
-    }
-
-    .secret-key {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin: 16px 0;
-      text-align: center;
-    }
-
-    .secret-key__label {
-      font-size: .75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      margin-bottom: 8px;
-    }
-
-    .secret-key__value {
-      font-family: var(--font-mono);
-      font-size: 1.1rem;
-      color: var(--text-primary);
-      font-weight: 600;
-      letter-spacing: .1em;
-      word-break: break-all;
-    }
-
-    .backup-codes {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 16px 0;
-    }
-
-    .backup-code {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px;
-      text-align: center;
-      font-family: var(--font-mono);
-      font-size: .95rem;
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .warning-box {
-      background: var(--warning-bg);
-      border: 1px solid var(--warning);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin: 16px 0;
-      display: flex;
-      gap: 12px;
-    }
-
-    .warning-box__icon {
-      font-size: 1.5rem;
-      flex-shrink: 0;
-    }
-
-    .warning-box__content {
-      flex: 1;
-    }
-
-    .warning-box__title {
-      font-size: .9rem;
-      font-weight: 600;
-      color: var(--warning);
-      margin-bottom: 4px;
-    }
-
-    .warning-box__text {
-      font-size: .85rem;
-      color: var(--text-primary);
-      line-height: 1.5;
-    }
-  </style>
 </head>
 
 <body>
 
-<!-- Navbar -->
 <div th:replace="~{fragments :: navbar}"></div>
 
-<!-- Main Content -->
 <main class="setup-page">
 
   <div class="setup-header">
@@ -178,7 +21,6 @@
 
   <div class="setup-card">
 
-    <!-- Step 1: Scan QR Code -->
     <div class="setup-step">
       <div class="step-title">
         <span class="step-number">1</span>
@@ -202,7 +44,6 @@
       </div>
     </div>
 
-    <!-- Step 2: Save Backup Codes -->
     <div class="setup-step">
       <div class="step-title">
         <span class="step-number">2</span>
@@ -233,7 +74,6 @@
       </button>
     </div>
 
-    <!-- Step 3: Verify -->
     <div class="setup-step">
       <div class="step-title">
         <span class="step-number">3</span>
@@ -272,23 +112,19 @@
 
 </main>
 
-<!-- Footer -->
 <div th:replace="~{fragments :: footer}"></div>
 
-<!-- Scripts -->
 <div th:replace="~{fragments :: scripts}"></div>
 
 <script th:inline="javascript">
   /*<![CDATA[*/
 
-  // ✅ Get data from Thymeleaf
   const backupCodesData = /*[[${backupCodes}]]*/ [];
   const usernameData = /*[[${username}]]*/ 'user';
 
   console.log('Backup codes loaded:', backupCodesData);
   console.log('Username:', usernameData);
 
-  // Download backup codes as text file
   function downloadBackupCodes() {
     if (!backupCodesData || backupCodesData.length === 0) {
       alert('No backup codes available');
@@ -299,14 +135,15 @@
     const codesText = backupCodesData.join('\n');
 
     const content = `VaultShield - Backup Codes for ${usernameData}
-Generated: ${new Date().toLocaleString()}
+      Generated: ${new Date().toLocaleString()}
 
-IMPORTANT: Save these codes in a safe place.
-Each code can only be used once.
+      IMPORTANT: Save these codes in a safe place.
+      Each code can only be used once.
 
-${codesText}
+      ${codesText}
 
-Keep these codes secure and treat them like passwords.`;
+      Keep these codes secure and treat them like passwords.
+    `;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -321,7 +158,6 @@ Keep these codes secure and treat them like passwords.`;
     console.log('Backup codes downloaded successfully');
   }
 
-  // Auto-format verification code input
   document.getElementById('verifyCode').addEventListener('input', function(e) {
     this.value = this.value.replace(/\D/g, '').substring(0, 6);
   });

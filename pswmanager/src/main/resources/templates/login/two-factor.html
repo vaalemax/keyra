@@ -5,101 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Two-Factor Authentication – VaultShield</title>
     <style th:replace="~{fragments :: styles}"></style>
-
-    <style>
-        .settings-page {
-            flex: 1;
-            max-width: 700px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 40px 24px;
-        }
-
-        .settings-header {
-            margin-bottom: 32px;
-            text-align: center;
-        }
-
-        .settings-header__title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .settings-header__subtitle {
-            font-size: .9rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .settings-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: var(--radius);
-            font-size: .85rem;
-            font-weight: 600;
-            margin-bottom: 24px;
-        }
-
-        .status-badge--enabled {
-            background: var(--success-bg);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        .status-badge--disabled {
-            background: var(--error-bg);
-            color: var(--error);
-            border: 1px solid var(--error);
-        }
-
-        .info-box {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-
-        .info-box__title {
-            font-size: .9rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .info-box__text {
-            font-size: .85rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/static/css/login/two-factor.css}">
 </head>
 
 <body>
 
-<!-- Navbar -->
 <div th:replace="~{fragments :: navbar}"></div>
 
-<!-- Main Content -->
 <main class="settings-page">
 
     <div class="settings-header">
@@ -109,12 +21,10 @@
         </p>
     </div>
 
-    <!-- Flash messages -->
     <div th:replace="~{fragments :: messages}"></div>
 
     <div class="settings-card">
 
-        <!-- Status Badge -->
         <div th:if="${twoFactorEnabled}" class="status-badge status-badge--enabled">
             ✓ Two-Factor Authentication is <strong>ENABLED</strong>
         </div>
@@ -123,7 +33,6 @@
             ✕ Two-Factor Authentication is <strong>DISABLED</strong>
         </div>
 
-        <!-- Info Box -->
         <div class="info-box">
             <div class="info-box__title">What is Two-Factor Authentication?</div>
             <div class="info-box__text">
@@ -133,14 +42,12 @@
             </div>
         </div>
 
-        <!-- Enabled State -->
         <div th:if="${twoFactorEnabled}">
             <p style="font-size: .9rem; color: var(--text-secondary); margin-bottom: 24px;">
                 Your account is protected with Two-Factor Authentication.
                 To disable it, confirm your password below.
             </p>
 
-            <!-- Disable Form -->
             <form th:action="@{/settings/2fa/disable}" method="post" id="disable2faForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
@@ -169,7 +76,6 @@
             </form>
         </div>
 
-        <!-- Disabled State -->
         <div th:unless="${twoFactorEnabled}">
             <p style="font-size: .9rem; color: var(--text-secondary); margin-bottom: 24px;">
                 Protect your account by enabling Two-Factor Authentication.
@@ -198,10 +104,8 @@
 
 </main>
 
-<!-- Footer -->
 <div th:replace="~{fragments :: footer}"></div>
 
-<!-- Scripts -->
 <div th:replace="~{fragments :: scripts}"></div>
 
 

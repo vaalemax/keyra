@@ -5,88 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Two-Factor Authentication – VaultShield</title>
     <style th:replace="~{fragments :: styles}"></style>
+    <link rel="stylesheet" th:href="@{/static/css/login/two-factor-verify.css}">
 
-    <style>
-        .verify-page {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-
-        .verify-container {
-            width: 100%;
-            max-width: 450px;
-        }
-
-        .verify-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .verify-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .verify-header__icon {
-            font-size: 3.5rem;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .verify-header__title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .verify-header__subtitle {
-            font-size: .9rem;
-            color: var(--text-muted);
-        }
-
-        .code-input {
-            font-family: var(--font-mono);
-            font-size: 1.8rem;
-            text-align: center;
-            letter-spacing: .5em;
-            padding: 20px;
-        }
-
-        .backup-link {
-            text-align: center;
-            margin-top: 16px;
-        }
-
-        .backup-link a {
-            font-size: .85rem;
-            color: var(--text-muted);
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        .backup-link a:hover {
-            color: var(--accent);
-        }
-
-        .backup-form {
-            display: none;
-        }
-
-        .backup-form.active {
-            display: block;
-        }
-
-        .totp-form.hidden {
-            display: none;
-        }
-    </style>
 </head>
 
 <body>
@@ -106,10 +26,8 @@
                 </p>
             </div>
 
-            <!-- Flash messages -->
             <div th:replace="~{fragments :: messages}"></div>
 
-            <!-- TOTP Form -->
             <form th:action="@{/login/2fa/verify}"
                   method="post"
                   id="totpForm"
@@ -136,7 +54,6 @@
                 </button>
             </form>
 
-            <!-- Backup Code Form -->
             <form th:action="@{/login/2fa/verify}"
                   method="post"
                   id="backupForm"
@@ -167,7 +84,6 @@
                 </div>
             </form>
 
-            <!-- Toggle link -->
             <div class="backup-link totp-link">
                 <a onclick="toggleBackupForm()">Lost your phone? Use a backup code</a>
             </div>
@@ -181,38 +97,7 @@
 
 <div th:replace="~{fragments :: footer}"></div>
 
-<script>
-    // Auto-format TOTP code
-    document.getElementById('totpCode')?.addEventListener('input', function(e) {
-        this.value = this.value.replace(/\D/g, '').substring(0, 6);
-    });
-
-    // Auto-format backup code
-    document.getElementById('backupCode')?.addEventListener('input', function(e) {
-        this.value = this.value.replace(/\D/g, '').substring(0, 8);
-    });
-
-    // Toggle between TOTP and backup code forms
-    function toggleBackupForm() {
-        const totpForm = document.getElementById('totpForm');
-        const backupForm = document.getElementById('backupForm');
-        const totpLink = document.querySelector('.totp-link');
-
-        if (backupForm.classList.contains('active')) {
-            // Show TOTP form
-            backupForm.classList.remove('active');
-            totpForm.classList.remove('hidden');
-            totpLink.style.display = 'block';
-            document.getElementById('totpCode').focus();
-        } else {
-            // Show backup form
-            totpForm.classList.add('hidden');
-            backupForm.classList.add('active');
-            totpLink.style.display = 'none';
-            document.getElementById('backupCode').focus();
-        }
-    }
-</script>
+<script th:src="@{/static/js/login/two-factor-verify.js}"></script>
 
 </body>
 </html>
