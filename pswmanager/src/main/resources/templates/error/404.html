@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Pagina Non Trovata</title>
+    <title>404 - Page Not Found</title>
     <style th:replace="~{fragments :: styles}"></style>
 
     <style>
@@ -66,21 +66,21 @@
 <div class="error-page">
     <div class="error-icon">🔍</div>
     <div class="error-code">404</div>
-    <h1 class="error-title">Pagina Non Trovata</h1>
+    <h1 class="error-title">Page Not Found</h1>
     <p class="error-message">
-        Ops! La pagina che stai cercando non esiste o è stata spostata.
+        Ops! The page you are looking for does not exist.
         <br>
         <span style="font-size: .85rem; color: var(--text-tertiary);" th:if="${requestUri}">
-                Percorso richiesto: <code th:text="${requestUri}"></code>
+                Requested url: <code th:text="${requestUri}"></code>
             </span>
     </p>
 
     <div class="error-actions">
         <a th:href="@{/vault}" class="btn btn-primary">
-            🏠 Torna al Vault
+            🏠 Go back to Vault
         </a>
         <a href="javascript:history.back()" class="btn btn-secondary">
-            ← Torna Indietro
+            ← Go back
         </a>
     </div>
 </div>

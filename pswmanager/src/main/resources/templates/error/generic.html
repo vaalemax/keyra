@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Errore</title>
+    <title>Error</title>
     <style th:replace="~{fragments :: styles}"></style>
     <style>
         .error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: var(--bg-base); }
@@ -19,14 +19,14 @@
 <div class="error-page">
     <div class="error-icon">🤔</div>
     <div class="error-code" th:text="${statusCode} ?: 'ERROR'"></div>
-    <h1 class="error-title">Si è verificato un errore</h1>
+    <h1 class="error-title">An error occured</h1>
     <p class="error-message">
-        <span th:text="${errorMessage} ?: 'Qualcosa non ha funzionato come previsto.'"></span>
+        <span th:text="${errorMessage} ?: 'Something went wrong.'"></span>
     </p>
 
     <div class="error-actions">
         <a th:href="@{/vault}" class="btn btn-primary">
-            🏠 Torna al Vault
+            🏠 Go back to Vault
         </a>
     </div>
 </div>

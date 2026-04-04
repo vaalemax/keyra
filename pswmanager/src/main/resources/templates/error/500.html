@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>500 - Errore del Server</title>
+  <title>500 - Server Error</title>
   <style th:replace="~{fragments :: styles}"></style>
   <style>
     .error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: var(--bg-base); }
@@ -19,19 +19,19 @@
 <div class="error-page">
   <div class="error-icon">⚠️</div>
   <div class="error-code">500</div>
-  <h1 class="error-title">Errore del Server</h1>
+  <h1 class="error-title">Server Error</h1>
   <p class="error-message">
-    Qualcosa è andato storto sul nostro server.
+    Something went wrong.
     <br>
-    Stiamo lavorando per risolvere il problema. Riprova tra qualche minuto.
+    We are working on a solution.
   </p>
 
   <div class="error-actions">
     <a href="javascript:location.reload()" class="btn btn-primary">
-      🔄 Ricarica Pagina
+      🔄 Reload Page
     </a>
     <a th:href="@{/vault}" class="btn btn-secondary">
-      🏠 Torna al Vault
+      🏠 Go back to Vault
     </a>
   </div>
 </div>

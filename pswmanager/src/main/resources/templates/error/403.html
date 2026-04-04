@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>403 - Accesso Negato</title>
+    <title>403 - Access Denied</title>
     <style th:replace="~{fragments :: styles}"></style>
     <style>
-        /* Riusa gli stessi stili del 404 */
         .error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: var(--bg-base); }
         .error-code { font-size: 8rem; font-weight: 900; color: var(--error); line-height: 1; margin-bottom: 20px; }
         .error-title { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
@@ -20,19 +19,19 @@
 <div class="error-page">
     <div class="error-icon">🚫</div>
     <div class="error-code">403</div>
-    <h1 class="error-title">Accesso Negato</h1>
+    <h1 class="error-title">Access Denied</h1>
     <p class="error-message">
-        Non hai i permessi necessari per accedere a questa risorsa.
+        You don't have enough permissions to access this resource.
         <br>
-        Prova ad effettuare il login o contatta l'amministratore.
+        Try to log in or contact an admin.
     </p>
 
     <div class="error-actions">
         <a th:href="@{/login}" class="btn btn-primary">
-            🔐 Vai al Login
+            🔐 Go to Login
         </a>
         <a th:href="@{/vault}" class="btn btn-secondary">
-            🏠 Torna al Vault
+            🏠 Go back to Vault
         </a>
     </div>
 </div>

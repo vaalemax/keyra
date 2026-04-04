@@ -20,7 +20,6 @@
             This is to protect our service from abuse.
         </p>
 
-        <!-- ✅ Show retry countdown if available -->
         <div th:if="${retryAfter}" style="margin-bottom: 24px;">
             <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent); margin-bottom: 8px;" id="countdown">
                 <span th:text="${retryAfter}">60</span>s
@@ -47,7 +46,6 @@
 
 <div th:replace="~{fragments :: footer}"></div>
 
-<!-- ✅ Countdown timer -->
 <script th:if="${retryAfter}">
     let secondsLeft = /*[[${retryAfter}]]*/ 60;
     const countdownEl = document.getElementById('countdown');
