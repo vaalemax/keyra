@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Fragments</title>
-
-    <link rel="stylesheet" th:href="@{/css/components/alerts.css}">
-    <link rel="stylesheet" th:href="@{/css/components/cards.css}">
-    <link rel="stylesheet" th:href="@{/css/components/footer.css}">
-    <link rel="stylesheet" th:href="@{/css/components/forms.css}">
-    <link rel="stylesheet" th:href="@{/css/components/generator.css}">
-    <link rel="stylesheet" th:href="@{/css/components/navbar.css}">
-    <link rel="stylesheet" th:href="@{/css/main.css}">
-
+    <th:block th:fragment="styles">
+        <link rel="stylesheet" th:href="@{/css/components/alerts.css}">
+        <link rel="stylesheet" th:href="@{/css/components/cards.css}">
+        <link rel="stylesheet" th:href="@{/css/components/footer.css}">
+        <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+        <link rel="stylesheet" th:href="@{/css/components/generator.css}">
+        <link rel="stylesheet" th:href="@{/css/components/navbar.css}">
+        <link rel="stylesheet" th:href="@{/css/main.css}">
+        <link rel="stylesheet" th:href="@{/css/vault.css}">
+    </th:block>
 </head>
 
 <nav th:fragment="navbar" class="navbar">
