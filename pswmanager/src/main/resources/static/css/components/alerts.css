@@ -1,0 +1,14 @@
+.alert {
+    display:       flex;
+    align-items:   flex-start;
+    gap:           12px;
+    padding:       14px 18px;
+    border-radius: var(--radius);
+    font-size:     .88rem;
+    margin-bottom: 18px;
+    animation:     slideDown .25s ease;
+}
+.alert .alert-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.alert-success  { background: var(--success-bg);  border: 1px solid var(--success);  color: var(--success);  }
+.alert-error    { background: var(--error-bg);    border: 1px solid var(--error);    color: var(--error);    }
+.alert-warning  { background: var(--warning-bg);  border: 1px solid var(--warning);  color: var(--warning);  }
