@@ -7,7 +7,7 @@ import com.portfolio.pswmanager.service.AuditService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.NonNull;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -36,8 +36,8 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
     }
 
     @Override
-    public void onLogoutSuccess(@NonNull HttpServletRequest request,
-                                @NonNull HttpServletResponse response,
+    public void onLogoutSuccess(@NotNull HttpServletRequest request,
+                                @NotNull HttpServletResponse response,
                                 Authentication authentication)
             throws IOException, ServletException {
 
