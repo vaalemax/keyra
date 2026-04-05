@@ -95,11 +95,11 @@ public class VaultController {
                         Collectors.counting()
                 ));
 
-        model.addAttribute("credentials", credentials);           // Credenziali visualizzate
-        model.addAttribute("allCredentials", allCredentials);    // Tutte (per il count nel dropdown)
-        model.addAttribute("totalCount", totalCount);            // Totale filtrate
-        model.addAttribute("secureCount", secureCount);          // Sicure filtrate
-        model.addAttribute("weakCount", weakCount);              // Deboli filtrate
+        model.addAttribute("credentials", credentials);
+        model.addAttribute("allCredentials", allCredentials);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("secureCount", secureCount);
+        model.addAttribute("weakCount", weakCount);
         model.addAttribute("selectedCategory", category != null ? category : "all");
         model.addAttribute("categoryCount", categoryCount);
 
