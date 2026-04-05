@@ -94,7 +94,7 @@ public class CredentialService {
         Credential credential = credentialRepository.findById(credentialId)
                 .orElseThrow(() -> {
                     log.warn("Credential not found - ID: {}, user: {}", credentialId, user.getUsername());
-                    return new IllegalArgumentException("Credenziale non trovata con ID: " + credentialId);
+                    return new IllegalArgumentException("Credential not found with ID: " + credentialId);
                 });
 
         if (!credential.getUser().getId().equals(user.getId())) {

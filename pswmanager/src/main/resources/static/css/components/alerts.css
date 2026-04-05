@@ -12,3 +12,12 @@
 .alert-success  { background: var(--success-bg);  border: 1px solid var(--success);  color: var(--success);  }
 .alert-error    { background: var(--error-bg);    border: 1px solid var(--error);    color: var(--error);    }
 .alert-warning  { background: var(--warning-bg);  border: 1px solid var(--warning);  color: var(--warning);  }
+
+.btn-lg {
+    padding: 13px 28px;
+    font-size: .95rem;
+}
+
+.btn-full {
+    width: 100%;
+}
