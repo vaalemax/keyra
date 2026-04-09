@@ -24,6 +24,10 @@ public class CustomErrorController implements ErrorController {
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
 
+            if (statusCode == 404 && shouldIgnore404(uri)) {
+                return "error/404";
+            }
+
             log.warn("HTTP Error {} occurred - URI: {}, Message: {}", statusCode, uri, message);
 
             model.addAttribute("statusCode", statusCode);
@@ -50,5 +54,20 @@ public class CustomErrorController implements ErrorController {
         }
 
         return "error/generic";
+    }
+
+    private boolean shouldIgnore404(String uri) {
+        if (uri == null) {
+            return false;
+        }
+
+        // List of common URIs to ignore
+        return uri.startsWith("/.well-known/") ||           // Chrome DevTools
+                uri.equals("/favicon.ico") ||                // Browser favicon
+                uri.equals("/apple-touch-icon.png") ||       // iOS Safari
+                uri.equals("/apple-touch-icon-precomposed.png") ||
+                uri.equals("/browserconfig.xml") ||      // IE/Edge
+                uri.equals("/robots.txt") ||                 // Crawler robots
+                uri.equals("/sitemap.xml");                  // Sitemap
     }
 }
