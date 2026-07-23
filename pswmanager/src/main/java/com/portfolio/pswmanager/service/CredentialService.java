@@ -5,23 +5,32 @@ import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
 import com.portfolio.pswmanager.repository.CredentialRepository;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CredentialService {
-    private final CredentialRepository credentialRepository;
-    private final EncryptionService encryptionService;
+
     private final CredentialMapper credentialMapper;
+
+    private final CredentialRepository credentialRepository;
+
+    private final EncryptionService encryptionService;
+
     private final ValidationService validationService;
 
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
@@ -29,7 +38,7 @@ public class CredentialService {
     // retrieves and decrypts all the credentials belonging to a user
     @Transactional(readOnly = true)
     public List<CredentialDTO> getAllCredentialsForUser(User user, SecretKey aesKey) {
-        log.debug("Retrieving all credentials for user: {}", user.getUsername());
+
         List<Credential> credentials = credentialRepository.findByUserIdAndIsActiveTrueOrderByCreatedAtDesc(user.getId());
         log.debug("Found {} active credentials for user: {}", credentials.size(), user.getUsername());
 
@@ -44,6 +53,23 @@ public class CredentialService {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<CredentialDTO> filterCredentials(String category, List<CredentialDTO> allCredentials){
+        if (category == null || category.isEmpty() || category.equals("all")) {
+            return allCredentials;
+        }
+        return allCredentials.stream()
+                .filter(c -> category.equals(c.getCategory()))
+                .toList();
+    }
+
+    public Map<String, Long> countByCategory(List<CredentialDTO> credentials){
+        return credentials.stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getCategory() != null ? c.getCategory() : "other",
+                        Collectors.counting()
+                ));
     }
 
     // creates and saves a new crypted credential

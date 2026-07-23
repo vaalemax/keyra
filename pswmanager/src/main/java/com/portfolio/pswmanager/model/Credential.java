@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class Credential {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,6 +41,7 @@ public class Credential {
 
     @Column(nullable = false)
     private boolean isActive;
+
     @PrePersist
     protected void onCreate() {
         isActive = true;

@@ -58,46 +58,19 @@ public class VaultController {
     @GetMapping("/vault")
     public String getVault(@RequestParam(required = false) String category, Model model, Authentication authentication, HttpSession session, HttpServletRequest request) {
 
-        log.info("=== VAULT ACCESS DEBUG ===");
-        log.info("Session ID: {}", session.getId());
-        log.info("Session creation time: {}", new Date(session.getCreationTime()));
-        log.info("Session last accessed: {}", new Date(session.getLastAccessedTime()));
-        log.info("Session attributes: {}", Collections.list(session.getAttributeNames()));
-
-        Object aesKeyObj = session.getAttribute("AES_KEY");
-        log.info("AES key in session: {}", aesKeyObj != null ? "PRESENT" : "NULL");
-        log.info("AES key class: {}", aesKeyObj != null ? aesKeyObj.getClass().getName() : "N/A");
-
-
-        log.debug("Vault page accessed by user: {}", authentication.getName());
-
         User user = sessionService.getCurrentUser(authentication);
         SecretKey aesKey = sessionService.getAesKeyFromSession(session);
-        log.debug("Vault page accessed by user: {}", user.getUsername());
-
-        log.info("AES key in session: {}", aesKey != null ? "PRESENT" : "NULL");
 
         List<CredentialDTO> allCredentials = credentialService.getAllCredentialsForUser(user, aesKey);
 
-        List<CredentialDTO> credentials = allCredentials;
-        if (category != null && !category.isEmpty() && !category.equals("all")) {
-            credentials = allCredentials.stream()
-                    .filter(c -> category.equals(c.getCategory()))
-                    .toList();
-
-            log.debug("Filtered credentials by category: {} - {} results", category, credentials.size());
-        }
+        List<CredentialDTO> credentials = credentialService.filterCredentials(category, allCredentials);
 
         long[] stats = credentialService.calculatePasswordStats(credentials);
         long totalCount = credentials.size();
         long secureCount = stats[0];
         long weakCount = stats[1];
 
-        Map<String, Long> categoryCount = allCredentials.stream()
-                .collect(Collectors.groupingBy(
-                        c -> c.getCategory() != null ? c.getCategory() : "other",
-                        Collectors.counting()
-                ));
+        Map<String, Long> categoryCount = credentialService.countByCategory(allCredentials);
 
         model.addAttribute("credentials", credentials);
         model.addAttribute("allCredentials", allCredentials);
@@ -116,8 +89,6 @@ public class VaultController {
                 auditService.getClientIp(request),
                 auditService.getUserAgent(request)
         );
-
-        log.debug("Vault rendered - {} credentials loaded", credentials.size());
 
         return "vault";
     }
