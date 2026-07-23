@@ -18,10 +18,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
+
+    private final AuditService auditService;
+
     private final UserService userService;
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-    private final AuditService auditService;
 
     @PostMapping("/register")
     public String registerUser(

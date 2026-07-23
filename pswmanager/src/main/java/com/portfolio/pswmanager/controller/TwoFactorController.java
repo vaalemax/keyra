@@ -24,13 +24,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TwoFactorController {
 
-    private static final Logger log = LoggerFactory.getLogger(TwoFactorController.class);
-
-    private final TwoFactorService twoFactorService;
-    private final UserService userService;
-    private final SessionService sessionService;
     private final AuditService auditService;
 
+    private final SessionService sessionService;
+
+    private final TwoFactorService twoFactorService;
+
+    private final UserService userService;
+
+    private static final Logger log = LoggerFactory.getLogger(TwoFactorController.class);
 
     @GetMapping("/settings/2fa")
     public String show2FASettings(Authentication authentication, Model model) {

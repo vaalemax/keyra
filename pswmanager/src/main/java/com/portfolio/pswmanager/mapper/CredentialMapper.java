@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Component
 public class CredentialMapper {
+
     private static final Logger log = LoggerFactory.getLogger(CredentialMapper.class);
 
     public CredentialDTO toDTO(Credential credential, String decryptedPassword) {

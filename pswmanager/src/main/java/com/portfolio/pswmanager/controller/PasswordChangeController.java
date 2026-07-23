@@ -30,12 +30,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PasswordChangeController {
 
-    private static final Logger log = LoggerFactory.getLogger(PasswordChangeController.class);
+    private final AuditService auditService;
+
+    private final CredentialRepository credentialRepository;
+
+    private final SessionService sessionService;
 
     private final UserService userService;
-    private final SessionService sessionService;
-    private final CredentialRepository credentialRepository;
-    private final AuditService auditService;
+
+    private static final Logger log = LoggerFactory.getLogger(PasswordChangeController.class);
 
     @GetMapping("/settings/password")
     public String showPasswordChangePage(Model model) {

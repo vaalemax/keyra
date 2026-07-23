@@ -27,13 +27,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TwoFactorVerificationController {
 
-    private static final Logger log = LoggerFactory.getLogger(TwoFactorVerificationController.class);
+    private final AuditService auditService;
+
+    private final EncryptionService encryptionService;
+
+    private final TwoFactorService twoFactorService;
 
     private final UserRepository userRepository;
-    private final TwoFactorService twoFactorService;
+
     private final UserService userService;
-    private final EncryptionService encryptionService;
-    private final AuditService auditService;
+
+    private static final Logger log = LoggerFactory.getLogger(TwoFactorVerificationController.class);
 
     @GetMapping("/login/2fa")
     public String show2FAVerification(HttpSession session, Model model) {

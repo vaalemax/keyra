@@ -44,10 +44,14 @@ import java.util.stream.Collectors;
 @Controller
 @RequiredArgsConstructor
 public class VaultController {
-    private final CredentialService credentialService;
-    private final EncryptionService encryptionService;
-    private final SessionService sessionService;
+
     private final AuditService auditService;
+
+    private final CredentialService credentialService;
+
+    private final EncryptionService encryptionService;
+
+    private final SessionService sessionService;
 
     private static final Logger log = LoggerFactory.getLogger(VaultController.class);
 
