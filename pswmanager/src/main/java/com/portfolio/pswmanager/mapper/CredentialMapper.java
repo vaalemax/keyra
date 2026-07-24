@@ -36,10 +36,8 @@ public class CredentialMapper {
 
     public void updateEntityFromDTO(Credential credential, CredentialDTO dto) {
         if (credential == null || dto == null) {
-            log.warn("Attempted to update entity from DTO with null values - credential: {}, dto: {}", credential != null, dto != null);
             return;
         }
-        log.debug("Updating Credential entity from DTO - ID: {}", credential.getId());
 
         credential.setServiceName(dto.getServiceName());
         credential.setUsername(dto.getUsername());

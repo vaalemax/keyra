@@ -148,8 +148,6 @@ public class VaultController {
                     auditService.getUserAgent(request)
             );
 
-
-
             redirectAttributes.addFlashAttribute("successMessage",
                     "Credential saved successfully!");
 
@@ -177,12 +175,10 @@ public class VaultController {
             Authentication authentication,
             HttpSession session,
             RedirectAttributes redirectAttributes,
-            HttpServletRequest request  // Inject request
+            HttpServletRequest request
     ) {
         User user = sessionService.getCurrentUser(authentication);
         SecretKey aesKey = sessionService.getAesKeyFromSession(session);
-
-        log.info("Edit credential request - ID: {}, user: {}", id, user.getUsername());
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
@@ -190,13 +186,9 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            // Audit log failure
-            auditService.logActionWithEntity(
-                    user,
-                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                    AuditLog.AuditStatus.FAILURE,
-                    "CREDENTIAL",
+            credentialService.auditVaultUpdateFailure(
                     id,
+                    user,
                     "Validation error: " + errorMessage,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -210,29 +202,24 @@ public class VaultController {
 
             credentialService.updateCredential(id, user, dto, aesKey);
 
-            // Audit log success
-            auditService.logActionWithEntity(
-                    user,
-                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                    AuditLog.AuditStatus.SUCCESS,
-                    "CREDENTIAL",
+            credentialService.auditVaultUpdateSuccess(
                     id,
-                    "Updated credential for service: " + dto.getServiceName(),
+                    user,
+                    dto.getServiceName(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            log.info("Credential edited successfully - ID: {}, user: {}", id, user.getUsername());
+
             redirectAttributes.addFlashAttribute("successMessage",
                     "Credential updated successfully!");
 
         } catch (IllegalArgumentException e) {
             log.warn("Edit credential failed - ID: {}, error: {}", id, e.getMessage());
 
-            auditService.logAction(
+            credentialService.auditVaultUpdateFailure(
+                    id,
                     user,
-                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                    AuditLog.AuditStatus.FAILURE,
                     "Failed to update credential: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -240,13 +227,9 @@ public class VaultController {
 
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            // Audit log failure
-            auditService.logActionWithEntity(
-                    user,
-                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                    AuditLog.AuditStatus.FAILURE,
-                    "CREDENTIAL",
+            credentialService.auditVaultUpdateFailure(
                     id,
+                    user,
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)

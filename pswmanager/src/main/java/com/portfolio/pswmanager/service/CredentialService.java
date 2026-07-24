@@ -114,6 +114,34 @@ public class CredentialService {
         );
     }
 
+    public void auditVaultUpdateSuccess(Long credentialId, User user, String serviceName,
+                                        String clientIp, String userAgent){
+        auditService.logActionWithEntity(
+                user,
+                AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                AuditLog.AuditStatus.SUCCESS,
+                "CREDENTIAL",
+                credentialId,
+                "Updated credential for service: " + serviceName,
+                clientIp,
+                userAgent
+        );
+    }
+
+    public void auditVaultUpdateFailure(Long credentialId, User user, String reason,
+                                        String clientIp, String userAgent){
+        auditService.logActionWithEntity(
+                user,
+                AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                AuditLog.AuditStatus.FAILURE,
+                "CREDENTIAL",
+                credentialId,
+                reason,
+                clientIp,
+                userAgent
+        );
+    }
+
     @Transactional
     public Credential createCredential(
             User user,
@@ -126,7 +154,7 @@ public class CredentialService {
             SecretKey aesKey
     ) {
         log.info("Creating credential for user: {}, service: {}", user.getUsername(), serviceName);
-        validationService.validateCredentialPassword(plainPassword, true);
+        validationService.validateCredentialPassword(plainPassword);
 
         String encryptedPassword;
         try {
@@ -156,28 +184,22 @@ public class CredentialService {
     public void updateCredential(Long credentialId, User user, CredentialDTO dto, SecretKey aesKey){
         log.info("Updating credential ID: {} for user: {}", credentialId, user.getUsername());
         Credential credential = credentialRepository.findById(credentialId)
-                .orElseThrow(() -> {
-                    log.warn("Credential not found - ID: {}, user: {}", credentialId, user.getUsername());
-                    return new IllegalArgumentException("Credential not found with ID: " + credentialId);
-                });
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Credential not found with ID: " + credentialId)
+                );
 
         if (!credential.getUser().getId().equals(user.getId())) {
-            log.warn("Unauthorized update attempt - credential ID: {}, user: {}, owner: {}",
-                    credentialId, user.getUsername(), credential.getUser().getUsername());
             throw new SecurityException("Not authorized to modify this credential");
         }
 
         credentialMapper.updateEntityFromDTO(credential, dto);
-        log.debug("Base fields updated for credential ID: {}", credentialId);
 
         if (dto.getPlainPassword() != null && !dto.getPlainPassword().trim().isEmpty()) {
-            validationService.validateCredentialPassword(dto.getPlainPassword(), false);
+            validationService.validateCredentialPasswordIfPresent(dto.getPlainPassword());
             try {
                 String encryptedPassword = encryptionService.encrypt(dto.getPlainPassword(), aesKey);
                 credential.setEncryptedPassword(encryptedPassword);
-                log.debug("Password updated for credential ID: {}", credentialId);
             } catch (Exception e) {
-                log.error("Error encrypting new password for credential ID: {}", credentialId, e);
                 throw new RuntimeException("Error encrypting new password", e);
             }
         } else {

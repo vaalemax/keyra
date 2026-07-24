@@ -14,9 +14,6 @@ public class ValidationService {
 
     private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
 
-    /**
-     * Validates a master password with strict security requirements.
-     */
     public List<String> validateMasterPassword(String password) {
         log.debug("Validating master password (length: {} chars)",
                 password != null ? password.length() : 0);
@@ -54,30 +51,6 @@ public class ValidationService {
         return errors;
     }
 
-    /**
-     * Validate credential password (optional for updates).
-     * Only validates if password is provided (not null and not empty).
-     */
-    public void validateCredentialPassword(String password, boolean isRequired) {
-
-        if (password == null || password.trim().isEmpty()) {
-            if (isRequired) {
-                throw new IllegalArgumentException("Password is required");
-            } else {
-                return;
-            }
-        }
-
-        if (password.length() < 8)
-            throw new IllegalArgumentException("Password must be at least 8 characters");
-
-        if (password.length() > 256)
-            throw new IllegalArgumentException("Password must not exceed 256 characters");
-    }
-
-    /**
-     * Checks if a password is secure (for statistics).
-     */
     public boolean isPasswordSecure(String password) {
         boolean isSecure = password != null && password.length() >= 12;
 
@@ -87,4 +60,28 @@ public class ValidationService {
 
         return isSecure;
     }
+
+    public void validateCredentialPassword(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        validatePasswordComplexity(password);
+    }
+
+    public void validateCredentialPasswordIfPresent(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            return;
+        }
+        validatePasswordComplexity(password);
+    }
+
+    private void validatePasswordComplexity(String password) {
+        if (password.length() < 8)
+            throw new IllegalArgumentException("Password must be at least 8 characters");
+
+        if (password.length() > 256)
+            throw new IllegalArgumentException("Password must not exceed 256 characters");
+    }
+
+
 }
