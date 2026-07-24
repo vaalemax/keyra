@@ -66,7 +66,6 @@ public class EncryptionService {
      * doFinal e ritorna String
      */
     public String decrypt(String encryptedPassword, SecretKey key) throws Exception {
-        log.debug("Decrypting password (input length: {} chars)", encryptedPassword.length());
 
         try {
             byte[] encryptedWithIv = Base64.getDecoder().decode(encryptedPassword);
@@ -82,11 +81,7 @@ public class EncryptionService {
             cipher.init(Cipher.DECRYPT_MODE, key, parameterSpec);
 
             byte[] decryptedData = cipher.doFinal(encryptedData);
-            String result = new String(decryptedData, StandardCharsets.UTF_8);
-
-            log.debug("Password decrypted successfully (output length: {} chars)", result.length());
-
-            return result;
+            return new String(decryptedData, StandardCharsets.UTF_8);
 
         } catch (Exception e) {
             log.error("Error during password decryption", e);
