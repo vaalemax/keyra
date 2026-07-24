@@ -66,17 +66,14 @@ public class VaultController {
         List<CredentialDTO> credentials = credentialService.filterCredentials(category, allCredentials);
 
         long[] stats = credentialService.calculatePasswordStats(credentials);
-        long totalCount = credentials.size();
-        long secureCount = stats[0];
-        long weakCount = stats[1];
 
         Map<String, Long> categoryCount = credentialService.countByCategory(allCredentials);
 
         model.addAttribute("credentials", credentials);
         model.addAttribute("allCredentials", allCredentials);
-        model.addAttribute("totalCount", totalCount);
-        model.addAttribute("secureCount", secureCount);
-        model.addAttribute("weakCount", weakCount);
+        model.addAttribute("totalCount", credentials.size());
+        model.addAttribute("secureCount", stats[0]);
+        model.addAttribute("weakCount", stats[1]);
         model.addAttribute("selectedCategory", category != null ? category : "all");
         model.addAttribute("categoryCount", categoryCount);
 
