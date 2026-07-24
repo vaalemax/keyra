@@ -35,11 +35,8 @@ import java.time.format.DateTimeFormatter;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -56,18 +53,33 @@ public class VaultController {
     private static final Logger log = LoggerFactory.getLogger(VaultController.class);
 
     @GetMapping("/vault")
-    public String getVault(@RequestParam(required = false) String category, Model model, Authentication authentication, HttpSession session, HttpServletRequest request) {
+    public String getVault(@RequestParam(required = false) String category,
+                           Model model,
+                           Authentication authentication,
+                           HttpSession session,
+                           HttpServletRequest request) {
 
         User user = sessionService.getCurrentUser(authentication);
         SecretKey aesKey = sessionService.getAesKeyFromSession(session);
 
-        List<CredentialDTO> allCredentials = credentialService.getAllCredentialsForUser(user, aesKey);
+        List<CredentialDTO> allCredentials =
+                credentialService.getAllCredentialsForUser(user, aesKey);
 
-        List<CredentialDTO> credentials = credentialService.filterCredentials(category, allCredentials);
+        List<CredentialDTO> credentials =
+                credentialService.getFilteredCredentialsForUser(category, allCredentials);
 
         long[] stats = credentialService.calculatePasswordStats(credentials);
 
         Map<String, Long> categoryCount = credentialService.countByCategory(allCredentials);
+
+        credentialService.auditVaultView(
+                user,
+                allCredentials.size(),
+                credentials.size(),
+                category,
+                auditService.getClientIp(request),
+                auditService.getUserAgent(request)
+        );
 
         model.addAttribute("credentials", credentials);
         model.addAttribute("allCredentials", allCredentials);
@@ -76,16 +88,6 @@ public class VaultController {
         model.addAttribute("weakCount", stats[1]);
         model.addAttribute("selectedCategory", category != null ? category : "all");
         model.addAttribute("categoryCount", categoryCount);
-
-        auditService.logAction(
-                user,
-                AuditLog.AuditAction.CREDENTIAL_VIEW,
-                AuditLog.AuditStatus.SUCCESS,
-                "Viewed vault - " + allCredentials.size() + " total credentials" +
-                        (category != null && !category.equals("all") ? " (showing " + credentials.size() + " in category: " + category + ")" : ""),
-                auditService.getClientIp(request),
-                auditService.getUserAgent(request)
-        );
 
         return "vault";
     }

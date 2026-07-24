@@ -1,22 +1,19 @@
 package com.portfolio.pswmanager.service;
 
 import com.portfolio.pswmanager.mapper.CredentialMapper;
+import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
 import com.portfolio.pswmanager.repository.CredentialRepository;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +21,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CredentialService {
+
+    private final AuditService auditService;
 
     private final CredentialMapper credentialMapper;
 
@@ -55,7 +54,7 @@ public class CredentialService {
                 .collect(Collectors.toList());
     }
 
-    public List<CredentialDTO> filterCredentials(String category, List<CredentialDTO> allCredentials){
+    public List<CredentialDTO> getFilteredCredentialsForUser(String category, List<CredentialDTO> allCredentials){
         if (category == null || category.isEmpty() || category.equals("all")) {
             return allCredentials;
         }
@@ -70,6 +69,23 @@ public class CredentialService {
                         c -> c.getCategory() != null ? c.getCategory() : "other",
                         Collectors.counting()
                 ));
+    }
+
+    public void auditVaultView(User user, int totalCount, int filteredCount,
+                               String category, String clientIp, String userAgent) {
+        String message = "Viewed vault - " + totalCount + " total credentials" +
+                (category != null && !category.equals("all")
+                        ? " (showing " + filteredCount + " in category: " + category + ")"
+                        : "");
+
+        auditService.logAction(
+                user,
+                AuditLog.AuditAction.CREDENTIAL_VIEW,
+                AuditLog.AuditStatus.SUCCESS,
+                message,
+                clientIp,
+                userAgent
+        );
     }
 
     // creates and saves a new crypted credential
