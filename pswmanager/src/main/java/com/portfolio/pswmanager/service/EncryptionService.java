@@ -30,8 +30,6 @@ public class EncryptionService {
      * @return password criptata in Base64
      */
     public String encrypt(String plainPassword, SecretKey key) throws Exception {
-        log.debug("Encrypting password (length: {} chars)", plainPassword.length());
-
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             byte[] iv = new byte[GCM_IV_LENGTH];
@@ -41,16 +39,11 @@ public class EncryptionService {
             cipher.init(Cipher.ENCRYPT_MODE, key, parameterSpec);
             byte[] encryptedData = cipher.doFinal(plainPassword.getBytes(StandardCharsets.UTF_8));
 
-            // Concatenate IV + encrypted data
             byte[] encryptedWithIv = new byte[GCM_IV_LENGTH + encryptedData.length];
             System.arraycopy(iv, 0, encryptedWithIv, 0, GCM_IV_LENGTH);
             System.arraycopy(encryptedData, 0, encryptedWithIv, GCM_IV_LENGTH, encryptedData.length);
 
-            String result = Base64.getEncoder().encodeToString(encryptedWithIv);
-
-            log.debug("Password encrypted successfully (output length: {} chars)", result.length());
-
-            return result;
+            return Base64.getEncoder().encodeToString(encryptedWithIv);
 
         } catch (Exception e) {
             log.error("Error during password encryption", e);

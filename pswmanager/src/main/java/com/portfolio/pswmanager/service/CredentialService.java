@@ -88,7 +88,32 @@ public class CredentialService {
         );
     }
 
-    // creates and saves a new crypted credential
+    public void auditVaultCreateSuccess(User user, Long credentialId, String serviceName,
+                                        String clientIp, String userAgent) {
+        auditService.logActionWithEntity(
+                user,
+                AuditLog.AuditAction.CREDENTIAL_CREATE,
+                AuditLog.AuditStatus.SUCCESS,
+                "CREDENTIAL",
+                credentialId,
+                "Created credential for service: " + serviceName,
+                clientIp,
+                userAgent
+        );
+    }
+
+    public void auditVaultCreateFailure(User user, String reason,
+                                        String clientIp, String userAgent) {
+        auditService.logAction(
+                user,
+                AuditLog.AuditAction.CREDENTIAL_CREATE,
+                AuditLog.AuditStatus.FAILURE,
+                reason,
+                clientIp,
+                userAgent
+        );
+    }
+
     @Transactional
     public Credential createCredential(
             User user,
@@ -102,15 +127,11 @@ public class CredentialService {
     ) {
         log.info("Creating credential for user: {}, service: {}", user.getUsername(), serviceName);
         validationService.validateCredentialPassword(plainPassword, true);
-        log.debug("Password validation passed for service: {}", serviceName);
 
-        // Cripta password
         String encryptedPassword;
         try {
             encryptedPassword = encryptionService.encrypt(plainPassword, aesKey);
-            log.debug("Password encrypted successfully for service: {}", serviceName);
         } catch (Exception e) {
-            log.error("Error encrypting password for user: {}, service: {}", user.getUsername(), serviceName, e);
             throw new RuntimeException("Error during password encryption", e);
         }
 
@@ -125,7 +146,8 @@ public class CredentialService {
         credential.setUser(user);
         credential.setEncryptedPassword(encryptedPassword);
 
-        log.info("Credential created successfully - ID: {}, user: {}, service: {}", credential.getId(), user.getUsername(), serviceName);
+        log.info("Credential created successfully - ID: {}, user: {}, service: {}",
+                credential.getId(), user.getUsername(), serviceName);
 
         return credentialRepository.save(credential);
     }

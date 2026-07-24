@@ -104,7 +104,9 @@ public class VaultController {
         User user = sessionService.getCurrentUser(authentication);
 
         if (dto.getPlainPassword() == null || dto.getPlainPassword().trim().isEmpty()) {
-            bindingResult.rejectValue("plainPassword", "error.plainPassword", "Password is required");
+            bindingResult.rejectValue("plainPassword",
+                    "error.plainPassword",
+                    "Password is required");
         }
 
         if (bindingResult.hasErrors()) {
@@ -113,12 +115,9 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            // Audit log failure
-            auditService.logAction(
+            credentialService.auditVaultCreateFailure(
                     user,
-                    AuditLog.AuditAction.CREDENTIAL_CREATE,
-                    AuditLog.AuditStatus.FAILURE,
-                    "Validation error: " + errorMessage,
+                    "Validation error: " +errorMessage,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
@@ -141,32 +140,30 @@ public class VaultController {
                     aesKey
             );
 
-            // Audit log success
-            auditService.logActionWithEntity(
+            credentialService.auditVaultCreateSuccess(
                     user,
-                    AuditLog.AuditAction.CREDENTIAL_CREATE,
-                    AuditLog.AuditStatus.SUCCESS,
-                    "CREDENTIAL",
                     created.getId(),
-                    "Created credential for service: " + dto.getServiceName(),
+                    dto.getServiceName(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            redirectAttributes.addFlashAttribute("successMessage","Credential saved successfully!");
+
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Credential saved successfully!");
 
         } catch (Exception e) {
-            // Audit log failure
-            auditService.logAction(
+
+            credentialService.auditVaultCreateFailure(
                     user,
-                    AuditLog.AuditAction.CREDENTIAL_CREATE,
-                    AuditLog.AuditStatus.FAILURE,
-                    "Error: " + e.getMessage(),
+                    "Error: " +e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            redirectAttributes.addFlashAttribute("errorMessage","Error saving credential: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error saving credential: " + e.getMessage());
         }
 
         return "redirect:/vault";
