@@ -1,11 +1,9 @@
 package com.portfolio.pswmanager.controller;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
-import com.portfolio.pswmanager.model.dto.VaultExportDTO;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.CredentialService;
 import com.portfolio.pswmanager.service.EncryptionService;
@@ -26,8 +24,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
@@ -45,8 +41,6 @@ public class VaultController {
     private final AuditService auditService;
 
     private final CredentialService credentialService;
-
-    private final EncryptionService encryptionService;
 
     private final SessionService sessionService;
 
@@ -72,11 +66,15 @@ public class VaultController {
 
         Map<String, Long> categoryCount = credentialService.countByCategory(allCredentials);
 
-        credentialService.auditVaultView(
+
+        credentialService.auditVaultSuccess(
+                AuditLog.AuditAction.CREDENTIAL_VIEW,
                 user,
-                allCredentials.size(),
-                credentials.size(),
-                category,
+                null,
+                "Viewed vault - " + allCredentials.size() + " total credentials" +
+                        (category != null && !category.equals("all")
+                                ? " (showing " + credentials.size() + " in category: " + category + ")"
+                                : ""),
                 auditService.getClientIp(request),
                 auditService.getUserAgent(request)
         );
@@ -302,54 +300,39 @@ public class VaultController {
             User user = sessionService.getCurrentUser(authentication);
             SecretKey aesKey = sessionService.getAesKeyFromSession(session);
 
-            log.info("Exporting vault for user: {}", user.getUsername());
+            List<CredentialDTO> credentials = credentialService.exportVault(user, aesKey);
 
-            // Get all credentials
-            List<CredentialDTO> credentials = credentialService.getAllCredentialsForUser(user, aesKey);
-
-            // Create export DTO
-            VaultExportDTO exportData = VaultExportDTO.create(user.getUsername(), credentials);
-
-            // Convert to JSON
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule()); // For LocalDateTime
-            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            String json = mapper.writeValueAsString(exportData);
-
-            log.debug("Vault JSON size: {} bytes", json.length());
-
-            // Encrypt the JSON
-            String encryptedData = encryptionService.encrypt(json, aesKey);
-
-            // Generate filename with timestamp
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            String filename = "vaultshield_backup_" + timestamp + ".encrypted";
-
-            // Audit log
-            auditService.logAction(
-                    user,
+            credentialService.auditVaultSuccess(
                     AuditLog.AuditAction.VAULT_EXPORT,
-                    AuditLog.AuditStatus.SUCCESS,
+                    user,
+                    null,
                     "Exported " + credentials.size() + " credentials",
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
+            String encryptedData = credentialService.encryptVaultData(user, credentials, aesKey);
+
+            String timestamp = LocalDateTime.now().format(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+            String filename = "vaultshield_backup_" + timestamp + ".encrypted";
+
             log.info("Vault exported successfully - {} credentials", credentials.size());
 
             return ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .header("Content-Disposition", "attachment; " +
+                            "filename=\"" + filename + "\"")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(encryptedData.getBytes(StandardCharsets.UTF_8));
 
         } catch (Exception e) {
             log.error("Error exporting vault", e);
-
             User user = sessionService.getCurrentUser(authentication);
-            auditService.logAction(
-                    user,
+
+            credentialService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_EXPORT,
-                    AuditLog.AuditStatus.FAILURE,
+                    user,
+                    null,
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -372,107 +355,33 @@ public class VaultController {
             User user = sessionService.getCurrentUser(authentication);
             SecretKey aesKey = sessionService.getAesKeyFromSession(session);
 
-            log.info("Importing vault for user: {} - replace: {}", user.getUsername(), replaceExisting);
 
-            // Validate file
-            if (file.isEmpty()) {
-                throw new IllegalArgumentException("File is empty");
-            }
+            int[] importCount = credentialService.importVault(user, aesKey, replaceExisting, file);
 
-            if (file.getSize() > 10 * 1024 * 1024) { // 10 MB limit
-                throw new IllegalArgumentException("File too large (max 10 MB)");
-            }
-
-            // Read encrypted data
-            String encryptedData = new String(file.getBytes(), StandardCharsets.UTF_8);
-
-            // ✅ Decrypt with SESSION KEY (same key used for export)
-            String json = encryptionService.decrypt(encryptedData, aesKey);
-
-            // Parse JSON
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            VaultExportDTO importData = mapper.readValue(json, VaultExportDTO.class);
-
-            log.debug("Import data version: {}, credential count: {}",
-                    importData.getVersion(), importData.getCredentialCount());
-
-            // Validate import data
-            if (importData.getCredentials() == null || importData.getCredentials().isEmpty()) {
-                throw new IllegalArgumentException("No credentials found in import file");
-            }
-
-            // If replace existing, delete all current credentials
-            if (replaceExisting) {
-                List<CredentialDTO> existing = credentialService.getAllCredentialsForUser(user, aesKey);
-                for (CredentialDTO cred : existing) {
-                    credentialService.deleteCredential(cred.getId(), user);
-                }
-                log.info("Deleted {} existing credentials", existing.size());
-            }
-
-            // Import credentials
-            int imported = 0;
-            int skipped = 0;
-
-            for (CredentialDTO dto : importData.getCredentials()) {
-                try {
-                    // Check for duplicates (same service + username)
-                    List<CredentialDTO> existing = credentialService.getAllCredentialsForUser(user, aesKey);
-                    boolean isDuplicate = existing.stream()
-                            .anyMatch(e -> e.getServiceName().equals(dto.getServiceName())
-                                    && e.getUsername().equals(dto.getUsername()));
-
-                    if (isDuplicate && !replaceExisting) {
-                        log.debug("Skipping duplicate: {} - {}", dto.getServiceName(), dto.getUsername());
-                        skipped++;
-                        continue;
-                    }
-
-                    // Import credential
-                    credentialService.createCredential(
-                            user,
-                            dto.getServiceName(),
-                            dto.getUsername(),
-                            dto.getDecryptedPassword(), // Password is already decrypted in the export
-                            dto.getUrl(),
-                            dto.getNotes(),
-                            dto.getCategory(),
-                            aesKey
-                    );
-
-                    imported++;
-
-                } catch (Exception e) {
-                    log.warn("Error importing credential: {} - {}", dto.getServiceName(), e.getMessage());
-                    skipped++;
-                }
-            }
-
-            // Audit log
-            auditService.logAction(
-                    user,
+            credentialService.auditVaultSuccess(
                     AuditLog.AuditAction.VAULT_IMPORT,
-                    AuditLog.AuditStatus.SUCCESS,
-                    "Imported " + imported + " credentials (skipped: " + skipped + ")",
+                    user,
+                    null,
+                    "Imported " + importCount[0] + " credentials " +
+                            "(skipped: " + importCount[1] + ")",
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            log.info("Vault imported - imported: {}, skipped: {}", imported, skipped);
+            log.info("Vault imported - imported: {}, skipped: {}", importCount[0], importCount[1]);
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Successfully imported " + imported + " credentials" +
-                            (skipped > 0 ? " (skipped " + skipped + " duplicates)" : ""));
+                    "Successfully imported " + importCount[0] + " credentials" +
+                            (importCount[1] > 0 ? " (skipped " + importCount[1] + " duplicates)" : ""));
 
         } catch (IllegalArgumentException e) {
             log.warn("Import validation error: {}", e.getMessage());
 
             User user = sessionService.getCurrentUser(authentication);
-            auditService.logAction(
-                    user,
+            credentialService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_IMPORT,
-                    AuditLog.AuditStatus.FAILURE,
+                    user,
+                    null,
                     "Validation error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -484,19 +393,19 @@ public class VaultController {
             log.error("Error importing vault", e);
 
             User user = sessionService.getCurrentUser(authentication);
-            auditService.logAction(
-                    user,
+            credentialService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_IMPORT,
-                    AuditLog.AuditStatus.FAILURE,
+                    user,
+                    null,
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Failed to import vault. Make sure the file was exported with the same account and password.");
+                    "Failed to import vault. Make sure the file was exported " +
+                            "with the same account and password.");
         }
-
         return "redirect:/vault";
     }
 }

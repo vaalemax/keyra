@@ -1,18 +1,24 @@
 package com.portfolio.pswmanager.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.portfolio.pswmanager.mapper.CredentialMapper;
 import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
+import com.portfolio.pswmanager.model.dto.VaultExportDTO;
 import com.portfolio.pswmanager.repository.CredentialRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +40,34 @@ public class CredentialService {
 
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
 
-    // retrieves and decrypts all the credentials belonging to a user
+    public void auditVaultSuccess(AuditLog.AuditAction auditAction, User user, Long credentialId,
+                                  String message, String clientIp, String userAgent) {
+        auditService.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.SUCCESS,
+                "CREDENTIAL",
+                credentialId,
+                message,
+                clientIp,
+                userAgent
+        );
+    }
+
+    public void auditVaultFailure(AuditLog.AuditAction auditAction, User user, Long credentialId,
+                                  String reason, String clientIp, String userAgent){
+        auditService.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.FAILURE,
+                "CREDENTIAL",
+                credentialId,
+                reason,
+                clientIp,
+                userAgent
+        );
+    }
+
     @Transactional(readOnly = true)
     public List<CredentialDTO> getAllCredentialsForUser(User user, SecretKey aesKey) {
 
@@ -71,49 +104,12 @@ public class CredentialService {
                 ));
     }
 
-    public void auditVaultView(User user, int totalCount, int filteredCount,
-                               String category, String clientIp, String userAgent) {
-        String message = "Viewed vault - " + totalCount + " total credentials" +
-                (category != null && !category.equals("all")
-                        ? " (showing " + filteredCount + " in category: " + category + ")"
-                        : "");
-
-        auditService.logAction(
-                user,
-                AuditLog.AuditAction.CREDENTIAL_VIEW,
-                AuditLog.AuditStatus.SUCCESS,
-                message,
-                clientIp,
-                userAgent
-        );
-    }
-
-    public void auditVaultSuccess(AuditLog.AuditAction auditAction, User user, Long credentialId,
-                                  String message, String clientIp, String userAgent) {
-        auditService.logActionWithEntity(
-                user,
-                auditAction,
-                AuditLog.AuditStatus.SUCCESS,
-                "CREDENTIAL",
-                credentialId,
-                message,
-                clientIp,
-                userAgent
-        );
-    }
-
-    public void auditVaultFailure(AuditLog.AuditAction auditAction, User user, Long credentialId,
-                                  String reason, String clientIp, String userAgent){
-        auditService.logActionWithEntity(
-                user,
-                auditAction,
-                AuditLog.AuditStatus.FAILURE,
-                "CREDENTIAL",
-                credentialId,
-                reason,
-                clientIp,
-                userAgent
-        );
+    public long[] calculatePasswordStats(List<CredentialDTO> credentials) {
+        long secureCount = credentials.stream()
+                .filter(c -> validationService.isPasswordSecure(c.getDecryptedPassword()))
+                .count();
+        long weakCount = credentials.size() - secureCount;
+        return new long[]{secureCount, weakCount};
     }
 
     @Transactional
@@ -202,16 +198,92 @@ public class CredentialService {
         log.info("Credential soft deleted successfully - ID: {}, user: {}", credentialId, user.getUsername());
     }
 
-    // calculates passwords safety statistics
-    public long[] calculatePasswordStats(List<CredentialDTO> credentials) {
-        log.debug("Calculating password statistics for {} credentials", credentials.size());
-        long secureCount = credentials.stream()
-                .filter(c -> validationService.isPasswordSecure(c.getDecryptedPassword()))
-                .count();
+    @Transactional
+    public List<CredentialDTO> exportVault(User user, SecretKey aesKey) {
+        log.info("Exporting vault for user: {}", user.getUsername());
 
-        long weakCount = credentials.size() - secureCount;
-        log.debug("Password stats - secure: {}, weak: {}", secureCount, weakCount);
+        return this.getAllCredentialsForUser(user, aesKey);
+    }
 
-        return new long[]{secureCount, weakCount};
+    public String encryptVaultData(User user, List<CredentialDTO> credentials, SecretKey aesKey) throws Exception {
+        VaultExportDTO exportData = VaultExportDTO.create(user.getUsername(), credentials);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String json = mapper.writeValueAsString(exportData);
+
+        log.debug("Vault JSON size: {} bytes", json.length());
+        return encryptionService.encrypt(json, aesKey);
+    }
+
+    @Transactional
+    public int[] importVault(User user, SecretKey aesKey, boolean replaceExisting,
+                            MultipartFile file) throws Exception {
+        log.info("Importing vault for user: {} - replace: {}", user.getUsername(), replaceExisting);
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File too large (max 10 MB)");
+        }
+
+        String encryptedData = new String(file.getBytes(), StandardCharsets.UTF_8);
+
+        String json = encryptionService.decrypt(encryptedData, aesKey);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        VaultExportDTO importData = mapper.readValue(json, VaultExportDTO.class);
+
+        if (importData.getCredentials() == null || importData.getCredentials().isEmpty())
+            throw new IllegalArgumentException("No credentials found in import file");
+
+        if (replaceExisting) {
+            List<CredentialDTO> existing = this.getAllCredentialsForUser(user, aesKey);
+            for (CredentialDTO cred : existing) {
+                this.deleteCredential(cred.getId(), user);
+            }
+            log.info("Deleted {} existing credentials", existing.size());
+        }
+
+        int imported = 0;
+        int skipped = 0;
+
+        for (CredentialDTO dto : importData.getCredentials()) {
+            try {
+                List<CredentialDTO> existing = this.getAllCredentialsForUser(user, aesKey);
+                boolean isDuplicate = existing.stream()
+                        .anyMatch(e -> e.getServiceName().equals(dto.getServiceName())
+                                && e.getUsername().equals(dto.getUsername()));
+
+                if (isDuplicate && !replaceExisting) {
+                    log.debug("Skipping duplicate: {} - {}", dto.getServiceName(), dto.getUsername());
+                    skipped++;
+                    continue;
+                }
+
+                this.createCredential(
+                        user,
+                        dto.getServiceName(),
+                        dto.getUsername(),
+                        dto.getDecryptedPassword(),
+                        dto.getUrl(),
+                        dto.getNotes(),
+                        dto.getCategory(),
+                        aesKey
+                );
+
+                imported++;
+
+            } catch (Exception e) {
+                log.warn("Error importing credential: {} - {}", dto.getServiceName(), e.getMessage());
+                skipped++;
+            }
+        }
+
+        return new int[]{imported, skipped};
     }
 }
