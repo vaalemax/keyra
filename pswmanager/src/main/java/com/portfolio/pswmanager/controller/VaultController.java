@@ -146,7 +146,7 @@ public class VaultController {
                     AuditLog.AuditAction.CREDENTIAL_CREATE,
                     user,
                     created.getId(),
-                    dto.getServiceName(),
+                    "Created credential for service: "+dto.getServiceName(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
@@ -212,7 +212,7 @@ public class VaultController {
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
                     id,
-                    dto.getServiceName(),
+                    "Updated credential for service: "+dto.getServiceName(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
@@ -262,34 +262,31 @@ public class VaultController {
         try {
             credentialService.deleteCredential(id, user);
 
-            // Audit log success
-            auditService.logActionWithEntity(
-                    user,
+            credentialService.auditVaultSuccess(
                     AuditLog.AuditAction.CREDENTIAL_DELETE,
-                    AuditLog.AuditStatus.SUCCESS,
-                    "CREDENTIAL",
+                    user,
                     id,
                     "Deleted credential ID: " + id,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            redirectAttributes.addFlashAttribute("successMessage", "Credential deleted!");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Credential deleted!");
 
         } catch (Exception e) {
-            // Audit log failure
-            auditService.logActionWithEntity(
-                    user,
+
+            credentialService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_DELETE,
-                    AuditLog.AuditStatus.FAILURE,
-                    "CREDENTIAL",
+                    user,
                     id,
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
 
-            redirectAttributes.addFlashAttribute("errorMessage", "Error during deletion");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error during deletion");
         }
 
         return "redirect:/vault";

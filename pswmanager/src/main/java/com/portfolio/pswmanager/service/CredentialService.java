@@ -89,14 +89,14 @@ public class CredentialService {
     }
 
     public void auditVaultSuccess(AuditLog.AuditAction auditAction, User user, Long credentialId,
-                                  String serviceName, String clientIp, String userAgent) {
+                                  String message, String clientIp, String userAgent) {
         auditService.logActionWithEntity(
                 user,
                 auditAction,
                 AuditLog.AuditStatus.SUCCESS,
                 "CREDENTIAL",
                 credentialId,
-                "Created credential for service: " + serviceName,
+                message,
                 clientIp,
                 userAgent
         );
@@ -184,23 +184,16 @@ public class CredentialService {
         credentialRepository.save(credential);
     }
 
-    // deletes a credential verifying that it belongs to a user
     @Transactional
     public void deleteCredential(Long credentialId, User user) {
         log.info("Deleting credential ID: {} for user: {}", credentialId, user.getUsername());
         Credential credential = credentialRepository.findById(credentialId)
-                .orElseThrow(() -> {
-                    log.warn("Credential not found for deletion - ID: {}, user: {}",
-                            credentialId, user.getUsername());
-                    return new IllegalArgumentException("Credential not found with ID: " + credentialId);
-                });
+                .orElseThrow(() -> new
+                IllegalArgumentException("Credential not found with ID: " + credentialId)
+                );
 
-        // Verifica ownership
-        if (!credential.getUser().getId().equals(user.getId())) {
-            log.warn("Unauthorized delete attempt - credential ID: {}, user: {}, owner: {}",
-                    credentialId, user.getUsername(), credential.getUser().getUsername());
+        if (!credential.getUser().getId().equals(user.getId()))
             throw new SecurityException("Not authorized to delete this credential");
-        }
 
         credential.setActive(false);
         credential.setUpdatedAt(LocalDateTime.now());
