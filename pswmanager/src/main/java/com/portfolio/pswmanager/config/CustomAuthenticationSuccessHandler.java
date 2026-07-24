@@ -35,21 +35,14 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication
-    ) throws IOException, ServletException {
+    ) throws IOException {
 
         String username = authentication.getName();
-        log.info("=== Authentication Success Handler Started ===");
-        log.info("User: {}", username);
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalStateException("User not found: " + username));
 
-        log.info("User loaded - 2FA enabled: {}", user.isTwoFactorEnabled());
-
-        // ✅ Check if 2FA is enabled
         if (user.isTwoFactorEnabled()) {
-            log.info("2FA enabled - redirecting to verification");
-
             HttpSession session = request.getSession();
             session.setAttribute("2FA_USER_ID", user.getId());
             session.setAttribute("2FA_USERNAME", user.getUsername());
@@ -58,10 +51,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
-        // ✅ Derive AES key
         try {
-            log.info("Deriving AES key...");
-
             String encryptionKey = user.getEncryptionKey();
             byte[] combined = Base64.getDecoder().decode(encryptionKey);
 
@@ -72,21 +62,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
             SecretKey aesKey = encryptionService.recreateKey(keyBytes);
 
-            log.info("AES key derived successfully");
-
-            // ✅ Store in session BEFORE redirect
             HttpSession session = request.getSession();
             session.setAttribute("AES_KEY", aesKey);
 
-            log.info("AES key stored in session");
             log.info("Session ID: {}", session.getId());
             log.info("Session max inactive interval: {} seconds", session.getMaxInactiveInterval());
 
-            // ✅ Verify it's saved
-            Object savedKey = session.getAttribute("AES_KEY");
-            log.info("Verification - AES key in session: {}", savedKey != null ? "YES" : "NO");
-
-            // Audit log
             auditService.logAction(
                     user,
                     AuditLog.AuditAction.LOGIN_SUCCESS,
@@ -96,12 +77,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                     request.getHeader("User-Agent")
             );
 
-            log.info("Redirecting to /vault");
 
-            // ✅ Redirect manually
             response.sendRedirect("/vault");
-
-            log.info("=== Authentication Success Handler Completed ===");
 
         } catch (Exception e) {
             log.error("Error in authentication success handler", e);

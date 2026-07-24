@@ -40,34 +40,6 @@ public class CredentialService {
 
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
 
-    public void auditVaultSuccess(AuditLog.AuditAction auditAction, User user, Long credentialId,
-                                  String message, String clientIp, String userAgent) {
-        auditService.logActionWithEntity(
-                user,
-                auditAction,
-                AuditLog.AuditStatus.SUCCESS,
-                "CREDENTIAL",
-                credentialId,
-                message,
-                clientIp,
-                userAgent
-        );
-    }
-
-    public void auditVaultFailure(AuditLog.AuditAction auditAction, User user, Long credentialId,
-                                  String reason, String clientIp, String userAgent){
-        auditService.logActionWithEntity(
-                user,
-                auditAction,
-                AuditLog.AuditStatus.FAILURE,
-                "CREDENTIAL",
-                credentialId,
-                reason,
-                clientIp,
-                userAgent
-        );
-    }
-
     @Transactional(readOnly = true)
     public List<CredentialDTO> getAllCredentialsForUser(User user, SecretKey aesKey) {
 

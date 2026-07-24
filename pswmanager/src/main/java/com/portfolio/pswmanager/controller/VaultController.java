@@ -66,10 +66,11 @@ public class VaultController {
         Map<String, Long> categoryCount = credentialService.countByCategory(allCredentials);
 
 
-        credentialService.auditVaultSuccess(
+        auditService.auditVaultSuccess(
                 AuditLog.AuditAction.CREDENTIAL_VIEW,
+                "USER",
                 user,
-                null,
+                user.getId(),
                 "Viewed vault - " + allCredentials.size() + " total credentials" +
                         (category != null && !category.equals("all")
                                 ? " (showing " + credentials.size() + " in category: " + category + ")"
@@ -112,8 +113,9 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_CREATE,
+                    "CREDENTIAL",
                     user,
                     null,
                     "Validation error: " +errorMessage,
@@ -139,8 +141,9 @@ public class VaultController {
                     aesKey
             );
 
-            credentialService.auditVaultSuccess(
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.CREDENTIAL_CREATE,
+                    "CREDENTIAL",
                     user,
                     created.getId(),
                     "Created credential for service: "+dto.getServiceName(),
@@ -153,8 +156,9 @@ public class VaultController {
 
         } catch (Exception e) {
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    "CREDENTIAL",
                     user,
                     null,
                     "Error: " +e.getMessage(),
@@ -188,8 +192,9 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Validation error: " + errorMessage,
@@ -205,8 +210,9 @@ public class VaultController {
 
             credentialService.updateCredential(id, user, dto, aesKey);
 
-            credentialService.auditVaultSuccess(
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Updated credential for service: "+dto.getServiceName(),
@@ -221,8 +227,9 @@ public class VaultController {
         } catch (IllegalArgumentException e) {
             log.warn("Edit credential failed - ID: {}, error: {}", id, e.getMessage());
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Failed to update credential: " + e.getMessage(),
@@ -232,8 +239,9 @@ public class VaultController {
 
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Error: " + e.getMessage(),
@@ -259,8 +267,9 @@ public class VaultController {
         try {
             credentialService.deleteCredential(id, user);
 
-            credentialService.auditVaultSuccess(
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.CREDENTIAL_DELETE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Deleted credential ID: " + id,
@@ -273,8 +282,9 @@ public class VaultController {
 
         } catch (Exception e) {
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.CREDENTIAL_DELETE,
+                    "CREDENTIAL",
                     user,
                     id,
                     "Error: " + e.getMessage(),
@@ -301,10 +311,11 @@ public class VaultController {
 
             List<CredentialDTO> credentials = credentialService.exportVault(user, aesKey);
 
-            credentialService.auditVaultSuccess(
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.VAULT_EXPORT,
+                    "USER",
                     user,
-                    null,
+                    user.getId(),
                     "Exported " + credentials.size() + " credentials",
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -328,10 +339,11 @@ public class VaultController {
             log.error("Error exporting vault", e);
             User user = sessionService.getCurrentUser(authentication);
 
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_EXPORT,
+                    "USER",
                     user,
-                    null,
+                    user.getId(),
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -357,10 +369,11 @@ public class VaultController {
 
             int[] importCount = credentialService.importVault(user, aesKey, replaceExisting, file);
 
-            credentialService.auditVaultSuccess(
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.VAULT_IMPORT,
+                    "USER",
                     user,
-                    null,
+                    user.getId(),
                     "Imported " + importCount[0] + " credentials " +
                             "(skipped: " + importCount[1] + ")",
                     auditService.getClientIp(request),
@@ -377,10 +390,11 @@ public class VaultController {
             log.warn("Import validation error: {}", e.getMessage());
 
             User user = sessionService.getCurrentUser(authentication);
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_IMPORT,
+                    "USER",
                     user,
-                    null,
+                    user.getId(),
                     "Validation error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -392,10 +406,11 @@ public class VaultController {
             log.error("Error importing vault", e);
 
             User user = sessionService.getCurrentUser(authentication);
-            credentialService.auditVaultFailure(
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.VAULT_IMPORT,
+                    "USER",
                     user,
-                    null,
+                    user.getId(),
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)

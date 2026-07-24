@@ -192,4 +192,34 @@ public class AuditService {
                         Collectors.counting()
                 ));
     }
+
+    @Transactional(readOnly = true)
+    public void auditVaultSuccess(AuditLog.AuditAction auditAction, String entityType, User user,
+                                  Long entityId, String message, String clientIp, String userAgent) {
+        this.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.SUCCESS,
+                entityType,
+                entityId,
+                message,
+                clientIp,
+                userAgent
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public void auditVaultFailure(AuditLog.AuditAction auditAction, String entityType, User user,
+                                  Long entityId, String reason, String clientIp, String userAgent){
+        this.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.FAILURE,
+                entityType,
+                entityId,
+                reason,
+                clientIp,
+                userAgent
+        );
+    }
 }
