@@ -115,8 +115,10 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            credentialService.auditVaultCreateFailure(
+            credentialService.auditVaultFailure(
+                    AuditLog.AuditAction.CREDENTIAL_CREATE,
                     user,
+                    null,
                     "Validation error: " +errorMessage,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -140,7 +142,8 @@ public class VaultController {
                     aesKey
             );
 
-            credentialService.auditVaultCreateSuccess(
+            credentialService.auditVaultSuccess(
+                    AuditLog.AuditAction.CREDENTIAL_CREATE,
                     user,
                     created.getId(),
                     dto.getServiceName(),
@@ -153,8 +156,10 @@ public class VaultController {
 
         } catch (Exception e) {
 
-            credentialService.auditVaultCreateFailure(
+            credentialService.auditVaultFailure(
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
+                    null,
                     "Error: " +e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -186,9 +191,10 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            credentialService.auditVaultUpdateFailure(
-                    id,
+            credentialService.auditVaultFailure(
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
+                    id,
                     "Validation error: " + errorMessage,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -202,9 +208,10 @@ public class VaultController {
 
             credentialService.updateCredential(id, user, dto, aesKey);
 
-            credentialService.auditVaultUpdateSuccess(
-                    id,
+            credentialService.auditVaultSuccess(
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
+                    id,
                     dto.getServiceName(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -217,9 +224,10 @@ public class VaultController {
         } catch (IllegalArgumentException e) {
             log.warn("Edit credential failed - ID: {}, error: {}", id, e.getMessage());
 
-            credentialService.auditVaultUpdateFailure(
-                    id,
+            credentialService.auditVaultFailure(
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
+                    id,
                     "Failed to update credential: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -227,9 +235,10 @@ public class VaultController {
 
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            credentialService.auditVaultUpdateFailure(
-                    id,
+            credentialService.auditVaultFailure(
+                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
                     user,
+                    id,
                     "Error: " + e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -246,7 +255,7 @@ public class VaultController {
             @PathVariable Long id,
             Authentication authentication,
             RedirectAttributes redirectAttributes,
-            HttpServletRequest request  // Inject request
+            HttpServletRequest request
     ) {
         User user = sessionService.getCurrentUser(authentication);
 

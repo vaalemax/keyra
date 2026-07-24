@@ -88,11 +88,11 @@ public class CredentialService {
         );
     }
 
-    public void auditVaultCreateSuccess(User user, Long credentialId, String serviceName,
-                                        String clientIp, String userAgent) {
+    public void auditVaultSuccess(AuditLog.AuditAction auditAction, User user, Long credentialId,
+                                  String serviceName, String clientIp, String userAgent) {
         auditService.logActionWithEntity(
                 user,
-                AuditLog.AuditAction.CREDENTIAL_CREATE,
+                auditAction,
                 AuditLog.AuditStatus.SUCCESS,
                 "CREDENTIAL",
                 credentialId,
@@ -102,37 +102,11 @@ public class CredentialService {
         );
     }
 
-    public void auditVaultCreateFailure(User user, String reason,
-                                        String clientIp, String userAgent) {
-        auditService.logAction(
-                user,
-                AuditLog.AuditAction.CREDENTIAL_CREATE,
-                AuditLog.AuditStatus.FAILURE,
-                reason,
-                clientIp,
-                userAgent
-        );
-    }
-
-    public void auditVaultUpdateSuccess(Long credentialId, User user, String serviceName,
-                                        String clientIp, String userAgent){
+    public void auditVaultFailure(AuditLog.AuditAction auditAction, User user, Long credentialId,
+                                  String reason, String clientIp, String userAgent){
         auditService.logActionWithEntity(
                 user,
-                AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                AuditLog.AuditStatus.SUCCESS,
-                "CREDENTIAL",
-                credentialId,
-                "Updated credential for service: " + serviceName,
-                clientIp,
-                userAgent
-        );
-    }
-
-    public void auditVaultUpdateFailure(Long credentialId, User user, String reason,
-                                        String clientIp, String userAgent){
-        auditService.logActionWithEntity(
-                user,
-                AuditLog.AuditAction.CREDENTIAL_UPDATE,
+                auditAction,
                 AuditLog.AuditStatus.FAILURE,
                 "CREDENTIAL",
                 credentialId,
