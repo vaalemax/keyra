@@ -6,7 +6,6 @@ import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.CredentialService;
-import com.portfolio.pswmanager.service.EncryptionService;
 import com.portfolio.pswmanager.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
