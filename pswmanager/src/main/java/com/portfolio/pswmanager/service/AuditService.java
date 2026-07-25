@@ -129,7 +129,6 @@ public class AuditService {
 
     @Transactional(readOnly = true)
     public Page<AuditLog> getUserAuditLogs(Long userId, Pageable pageable) {
-        log.debug("Retrieving audit logs for user ID: {}", userId);
         return auditLogRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
     }
 
@@ -159,14 +158,11 @@ public class AuditService {
         return userAgent;
     }
 
-    // count by action type)
     @Transactional(readOnly = true)
     public Map<String, Long> getActionStatistics(Long userId) {
-        log.debug("Calculating action statistics for user ID: {}", userId);
-
         List<AuditLog> logs = auditLogRepository.findByUserIdOrderByTimestampDesc(
                 userId,
-                PageRequest.of(0, 1000)  // Last 1000 events
+                PageRequest.of(0, 1000)
         ).getContent();
 
         return logs.stream()
@@ -178,10 +174,7 @@ public class AuditService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> getDailyActivityStats(Long userId, int days) {
-        log.debug("Calculating daily activity stats for user ID: {} (last {} days)", userId, days);
-
         LocalDateTime since = LocalDateTime.now().minusDays(days);
-
         List<AuditLog> logs = auditLogRepository.findByUserIdAndTimestampAfter(userId, since);
 
         return logs.stream()

@@ -25,10 +25,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ActivityController {
 
-    private static final Logger log = LoggerFactory.getLogger(ActivityController.class);
-
     private final AuditService auditService;
+
     private final SessionService sessionService;
+
+    private static final Logger log = LoggerFactory.getLogger(ActivityController.class);
 
     @GetMapping("/activity")
     public String viewActivity(

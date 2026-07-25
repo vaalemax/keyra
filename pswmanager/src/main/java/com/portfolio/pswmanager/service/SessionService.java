@@ -20,7 +20,6 @@ public class SessionService {
                 new RuntimeException("User not found"));
     }
 
-    // retrieve AES key from session
     public SecretKey getAesKeyFromSession(HttpSession session){
         SecretKey aesKey = (SecretKey) session.getAttribute("AES_KEY");
         if(aesKey==null){
