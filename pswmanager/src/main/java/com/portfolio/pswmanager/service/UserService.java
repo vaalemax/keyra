@@ -35,41 +35,27 @@ public class UserService {
     public void registerUser(String username, String masterPassword) throws Exception {
         log.info("Registration attempt for username: {}", username);
 
-        // Check if username already exists
         if (userRepository.findByUsername(username).isPresent()) {
-            log.warn("Registration failed - username already exists: {}", username);
             throw new IllegalArgumentException("Username is already used");
         }
 
-        // Validate master password
         List<String> errors = validationService.validateMasterPassword(masterPassword);
         if (!errors.isEmpty()) {
-            log.warn("Registration failed - weak master password for username: {}", username);
             throw new IllegalArgumentException(
                     "Master password requirements: " + String.join(", ", errors));
         }
 
-        log.debug("Master password validation passed for username: {}", username);
-
-        // Hash master password with BCrypt
         String hashedPassword = passwordEncoder.encode(masterPassword);
-        log.debug("Master password hashed successfully");
 
-        // Generate salt
         byte[] salt = encryptionService.generateSalt();
-        log.debug("Salt generated");
 
-        // Derive AES key from master password
         SecretKey aesKey = encryptionService.deriveKeyFromPassword(masterPassword, salt);
-        log.debug("AES key derived successfully");
 
-        // Concatenate salt + key and convert to Base64
         byte[] combined = new byte[salt.length + aesKey.getEncoded().length];
         System.arraycopy(salt, 0, combined, 0, salt.length);
         System.arraycopy(aesKey.getEncoded(), 0, combined, salt.length, aesKey.getEncoded().length);
         String encryptionKey = Base64.getEncoder().encodeToString(combined);
 
-        // Create and save user
         User user = new User();
         user.setUsername(username);
         user.setPasswordHash(hashedPassword);

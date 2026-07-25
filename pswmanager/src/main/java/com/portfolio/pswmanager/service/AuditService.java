@@ -24,9 +24,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuditService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
-
     private final AuditLogRepository auditLogRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -55,7 +55,6 @@ public class AuditService {
                     status);
 
         } catch (Exception e) {
-            // Don't throw exception - audit failures should not break main flow
             log.error("Failed to create audit log - action: {}, user: {}",
                     action,
                     user != null ? user.getUsername() : "SYSTEM",
@@ -63,7 +62,6 @@ public class AuditService {
         }
     }
 
-    // logs an action with entity reference (e.g., credential ID)
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logActionWithEntity(
