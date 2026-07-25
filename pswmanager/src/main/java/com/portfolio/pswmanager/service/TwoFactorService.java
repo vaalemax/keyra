@@ -41,9 +41,6 @@ public class TwoFactorService {
         return secret;
     }
 
-    /**
-     * Verify a TOTP code.
-     */
     public boolean verifyCode(String secret, int code) {
         log.debug("Verifying TOTP code for secret (first 4 chars): {}...", secret.substring(0, 4));
         boolean isValid = googleAuthenticator.authorize(secret, code);
@@ -100,33 +97,21 @@ public class TwoFactorService {
         return codes;
     }
 
-    /**
-     * Verify a backup code.
-     */
-    public boolean verifyBackupCode(String providedCode, List<String> backupCodes) {
-        log.debug("Verifying backup code");
-
+    public boolean verifyBackupCode(String providedCode, List<String> backupCodes, Long userId) {
         if (backupCodes == null || backupCodes.isEmpty()) {
             log.warn("No backup codes available");
             return false;
         }
 
         boolean isValid = backupCodes.contains(providedCode);
-        log.debug("Backup code verification result: {}", isValid);
+        log.debug("Backup code verification result for user ID {}: {}",userId, isValid);
 
         return isValid;
     }
 
-    /**
-     * Remove a used backup code from the list.
-     */
     public List<String> removeBackupCode(String usedCode, List<String> backupCodes) {
-        log.debug("Removing used backup code");
-
         List<String> updatedCodes = new ArrayList<>(backupCodes);
         updatedCodes.remove(usedCode);
-
-        log.debug("Backup codes remaining: {}", updatedCodes.size());
         return updatedCodes;
     }
 }

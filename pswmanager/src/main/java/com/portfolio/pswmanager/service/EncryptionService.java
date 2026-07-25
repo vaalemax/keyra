@@ -126,16 +126,10 @@ public class EncryptionService {
      * @return SecretKey instance
      */
     public SecretKey recreateKey(byte[] keyBytes) {
-        log.debug("Recreating AES key from bytes (length: {} bytes)", keyBytes.length);
-
         if (keyBytes.length != 32) {
             log.warn("Invalid key length: {} bytes (expected 32 for AES-256)", keyBytes.length);
             throw new IllegalArgumentException("Invalid AES key length. Expected 32 bytes for AES-256.");
         }
-
-        SecretKey key = new SecretKeySpec(keyBytes, "AES");
-        log.debug("AES key recreated successfully");
-
-        return key;
+        return new SecretKeySpec(keyBytes, "AES");
     }
 }

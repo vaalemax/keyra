@@ -190,9 +190,6 @@ public class UserService {
         log.info("2FA disabled successfully for user: {}", user.getUsername());
     }
 
-    /**
-     * Get backup codes for user.
-     */
     public List<String> getBackupCodes(User user) {
         if (user.getBackupCodes() == null) {
             return new ArrayList<>();
@@ -208,22 +205,14 @@ public class UserService {
         }
     }
 
-    /**
-     * Update backup codes after one is used.
-     */
     @Transactional
     public void updateBackupCodes(User user, List<String> updatedCodes) {
-        log.info("Updating backup codes for user: {}", user.getUsername());
-
         try {
             ObjectMapper mapper = new ObjectMapper();
             String backupCodesJson = mapper.writeValueAsString(updatedCodes);
             user.setBackupCodes(backupCodesJson);
             userRepository.save(user);
-
-            log.info("Backup codes updated - remaining: {}", updatedCodes.size());
         } catch (Exception e) {
-            log.error("Error updating backup codes", e);
             throw new RuntimeException("Error updating backup codes", e);
         }
     }

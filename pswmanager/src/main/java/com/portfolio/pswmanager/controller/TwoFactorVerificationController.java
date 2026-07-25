@@ -49,7 +49,6 @@ public class TwoFactorVerificationController {
         }
 
         String username = (String) session.getAttribute("2FA_USERNAME");
-        log.debug("2FA verification page shown for user: {}", username);
 
         model.addAttribute("username", username);
 
@@ -74,30 +73,25 @@ public class TwoFactorVerificationController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
 
-        log.info("2FA verification attempt for user: {}", user.getUsername());
-
-        boolean isValid = false;
+        boolean isValid;
 
         try {
             if (useBackupCode) {
                 log.debug("Verifying backup code for user: {}", user.getUsername());
 
                 List<String> backupCodes = userService.getBackupCodes(user);
-                isValid = twoFactorService.verifyBackupCode(code.trim(), backupCodes);
+                isValid = twoFactorService.verifyBackupCode(code.trim(), backupCodes, userId);
 
                 if (isValid) {
                     List<String> updatedCodes = twoFactorService.removeBackupCode(code.trim(), backupCodes);
                     userService.updateBackupCodes(user, updatedCodes);
 
-                    log.info("Backup code verified and removed for user: {} - remaining: {}",
-                            user.getUsername(), updatedCodes.size());
-
                     if (updatedCodes.size() <= 2) {
                         session.setAttribute("warningMessage",
-                                "Warning: You have only " + updatedCodes.size() + " backup codes remaining.");
+                                "Warning: You have only " + updatedCodes.size() +
+                                        " backup codes remaining.");
                     }
                 }
-
             } else {
                 log.debug("Verifying TOTP code for user: {}", user.getUsername());
 
@@ -120,8 +114,6 @@ public class TwoFactorVerificationController {
                     SecretKey aesKey = encryptionService.recreateKey(keyBytes);
                     session.setAttribute("AES_KEY", aesKey);
 
-                    log.debug("AES key stored in session for user: {}", user.getUsername());
-
                 } catch (Exception e) {
                     log.error("Error deriving AES key after 2FA", e);
                     redirectAttributes.addFlashAttribute("errorMessage",
@@ -132,13 +124,15 @@ public class TwoFactorVerificationController {
                 session.removeAttribute("2FA_USER_ID");
                 session.removeAttribute("2FA_USERNAME");
 
-                auditService.logAction(
-                        user,
+
+                auditService.auditVaultSuccess(
                         AuditLog.AuditAction.LOGIN_SUCCESS,
-                        AuditLog.AuditStatus.SUCCESS,
+                        "USER",
+                        user,
+                        userId,
                         "Successful login with 2FA" + (useBackupCode ? " (backup code)" : ""),
-                        getClientIp(request),
-                        request.getHeader("User-Agent")
+                        auditService.getClientIp(request),
+                        auditService.getUserAgent(request)
                 );
 
                 return "redirect:/vault";
@@ -146,13 +140,14 @@ public class TwoFactorVerificationController {
             } else {
                 log.warn("2FA verification failed - invalid code for user: {}", user.getUsername());
 
-                auditService.logAction(
-                        user,
+                auditService.auditVaultFailure(
                         AuditLog.AuditAction.LOGIN_FAILURE,
-                        AuditLog.AuditStatus.FAILURE,
+                        "USER",
+                        user,
+                        userId,
                         "2FA verification failed - invalid code",
-                        getClientIp(request),
-                        request.getHeader("User-Agent")
+                        auditService.getClientIp(request),
+                        auditService.getUserAgent(request)
                 );
 
                 redirectAttributes.addFlashAttribute("errorMessage",
@@ -162,38 +157,26 @@ public class TwoFactorVerificationController {
 
         } catch (NumberFormatException e) {
             log.warn("2FA verification failed - invalid code format for user: {}", user.getUsername());
-            redirectAttributes.addFlashAttribute("errorMessage", "Invalid code format");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Invalid code format");
             return "redirect:/login/2fa";
 
         } catch (Exception e) {
             log.error("Error during 2FA verification for user: {}", user.getUsername(), e);
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.SYSTEM_ERROR,
-                    AuditLog.AuditStatus.FAILURE,
+                    "USER",
+                    user,
+                    userId,
                     "2FA verification error: " + e.getMessage(),
-                    getClientIp(request),
-                    request.getHeader("User-Agent")
+                    auditService.getClientIp(request),
+                    auditService.getUserAgent(request)
             );
 
             redirectAttributes.addFlashAttribute("errorMessage",
                     "An error occurred. Please try again.");
             return "redirect:/login/2fa";
         }
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
     }
 }
