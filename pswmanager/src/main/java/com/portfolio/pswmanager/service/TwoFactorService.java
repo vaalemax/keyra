@@ -50,41 +50,21 @@ public class TwoFactorService {
         this.encryptionService = encryptionService;
     }
 
-    /**
-     * Generate a new TOTP secret for a user.
-     */
     public String generateSecret() {
         GoogleAuthenticatorKey key = googleAuthenticator.createCredentials();
-        String secret = key.getKey();
-        log.debug("Generated new TOTP secret (length: {})", secret.length());
-        return secret;
+        return key.getKey();
     }
 
-    public boolean verifyCode(String secret, int code) {
-        log.debug("Verifying TOTP code for secret (first 4 chars): {}...", secret.substring(0, 4));
-        boolean isValid = googleAuthenticator.authorize(secret, code);
-        log.debug("TOTP code verification result: {}", isValid);
-        return isValid;
-    }
-
-    /**
-     * Generate QR code URL for Google Authenticator.
-     */
     public String generateQrCodeUrl(String username, String secret) {
         String issuer = "VaultShield";
-        String url = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(issuer, username, new GoogleAuthenticatorKey.Builder(secret).build());
-        log.debug("Generated QR code URL for user: {}", username);
-        return url;
+        return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
+                issuer, username, new GoogleAuthenticatorKey.Builder(secret).build());
     }
 
-    /**
-     * Generate QR code image as Base64 string.
-     */
     public String generateQrCodeImage(String qrCodeUrl) throws WriterException, IOException {
-        log.debug("Generating QR code image");
-
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrCodeUrl, BarcodeFormat.QR_CODE, 300, 300);
+        BitMatrix bitMatrix = qrCodeWriter.encode(
+                qrCodeUrl, BarcodeFormat.QR_CODE, 300, 300);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
@@ -92,28 +72,27 @@ public class TwoFactorService {
         byte[] imageBytes = outputStream.toByteArray();
         String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
-        log.debug("QR code image generated (size: {} bytes)", imageBytes.length);
-
         return "data:image/png;base64," + base64Image;
     }
 
-    /**
-     * Generate backup codes for recovery.
-     */
     public List<String> generateBackupCodes() {
-        log.debug("Generating backup codes");
 
         List<String> codes = new ArrayList<>();
         SecureRandom random = new SecureRandom();
 
         for (int i = 0; i < 10; i++) {
-            // Generate 8-digit code
             int code = 10000000 + random.nextInt(90000000);
             codes.add(String.valueOf(code));
         }
 
-        log.debug("Generated {} backup codes", codes.size());
         return codes;
+    }
+
+    public boolean verifyCode(String secret, int code) {
+        log.debug("Verifying TOTP code for secret (first 4 chars): {}...", secret.substring(0, 4));
+        boolean isValid = googleAuthenticator.authorize(secret, code);
+        log.debug("TOTP code verification result: {}", isValid);
+        return isValid;
     }
 
     public boolean verifyBackupCode(String providedCode, List<String> backupCodes, Long userId) {

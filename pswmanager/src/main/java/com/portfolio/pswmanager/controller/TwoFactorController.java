@@ -46,10 +46,7 @@ public class TwoFactorController {
     public String setup2FA(Authentication authentication, Model model) {
         User user = sessionService.getCurrentUser(authentication);
 
-        log.info("Starting 2FA setup for user: {}", user.getUsername());
-
         String secret = twoFactorService.generateSecret();
-
         String qrCodeUrl = twoFactorService.generateQrCodeUrl(user.getUsername(), secret);
 
         try {
