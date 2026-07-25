@@ -82,3 +82,13 @@
     justify-content: flex-end;
     flex-wrap: wrap;
 }
+
+.btn-primary {
+    background: var(--accent);
+    color:      #fff;
+}
+.btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-glow);
+    color: white;
+}

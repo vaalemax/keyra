@@ -211,3 +211,7 @@ document.getElementById('importForm')?.addEventListener('submit', function(e) {
         }
     }
 });
+
+if (document.body) {
+    document.body.dataset.authenticated = 'true';
+}

@@ -33,11 +33,6 @@
 
             <div th:replace="~{fragments :: messages}"></div>
 
-            <div th:if="${errorMessage}" class="login-error">
-                <span class="alert-icon">✕</span>
-                <span th:text="${errorMessage}">Error during registration.</span>
-            </div>
-
             <form th:action="@{/register}" method="post" class="register-form" id="registerForm" novalidate>
 
                 <div class="form-group">
