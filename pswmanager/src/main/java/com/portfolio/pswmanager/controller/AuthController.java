@@ -32,8 +32,6 @@ public class AuthController {
             RedirectAttributes redirectAttributes,
             HttpServletRequest httpRequest
     ) {
-        log.info("Registration request received for username: {}", request.getUsername());
-
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldError() != null
                     ? bindingResult.getFieldError().getDefaultMessage() : "Invalid data";
@@ -58,8 +56,6 @@ public class AuthController {
 
         try {
             userService.registerUser(request.getUsername(), request.getPassword());
-
-            log.info("Registration successful for username: {}", request.getUsername());
 
             auditService.logAction(
                     null,

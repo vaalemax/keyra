@@ -1,14 +1,13 @@
 package com.portfolio.pswmanager.model.dto;
 
-import com.portfolio.pswmanager.validation.PasswordsMatch;
 import com.portfolio.pswmanager.validation.StrongMasterPassword;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-@PasswordsMatch
 public class RegisterRequest {
 
     @NotBlank(message = "Username is required")
@@ -25,4 +24,9 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password confirmation is required")
     private String confirmPassword;
+
+    @AssertTrue(message = "Passwords do not match")
+    private boolean isPasswordConfirmed() {
+        return password == null || password.equals(confirmPassword);
+    }
 }

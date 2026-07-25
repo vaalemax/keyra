@@ -18,7 +18,6 @@ public class PasswordController {
     private final PasswordGeneratorService passwordGeneratorService;
     private static final Logger log = LoggerFactory.getLogger(PasswordController.class);
 
-
     @PostMapping("/generate")
     public ResponseEntity<?> generatePassword(@RequestBody PasswordGenerationRequest request) {
         try {
