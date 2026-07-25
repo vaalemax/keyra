@@ -23,12 +23,6 @@ public class EncryptionService {
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128;
 
-    /**
-     * Cripta una password usando AES-256-GCM
-     * @param plainPassword password in chiaro
-     * @param key chiave di encryption (derivata dalla master password)
-     * @return password criptata in Base64
-     */
     public String encrypt(String plainPassword, SecretKey key) throws Exception {
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
@@ -51,13 +45,6 @@ public class EncryptionService {
         }
     }
 
-    /**
-     * Decode Base64
-     * Estrai IV (primi 12 bytes)
-     * Estrai ciphertext (resto)
-     * Init cipher in DECRYPT_MODE
-     * doFinal e ritorna String
-     */
     public String decrypt(String encryptedPassword, SecretKey key) throws Exception {
 
         try {
@@ -92,29 +79,18 @@ public class EncryptionService {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
             KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 256);
             SecretKey tmp = factory.generateSecret(spec);
-            SecretKey result = new SecretKeySpec(tmp.getEncoded(), "AES");
-
-            log.debug("AES key derived successfully");
-
-            return result;
-
+            return new SecretKeySpec(tmp.getEncoded(), "AES");
         } catch (Exception e) {
             log.error("Error deriving AES key from password", e);
             throw e;
         }
     }
 
-    /**
-     * Generates a random salt for key derivation.
-     */
     public byte[] generateSalt() {
         log.debug("Generating random salt (16 bytes)");
 
         byte[] salt = new byte[16];
         new SecureRandom().nextBytes(salt);
-
-        log.debug("Salt generated successfully");
-
         return salt;
     }
 

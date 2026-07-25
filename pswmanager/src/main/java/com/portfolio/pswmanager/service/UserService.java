@@ -90,13 +90,12 @@ public class UserService {
     ) throws Exception {
         log.info("Changing master password for user: {}", user.getUsername());
 
-        // 1. Verify current password
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            log.warn("Password change failed - incorrect current password for user: {}", user.getUsername());
+            log.warn("Password change failed - incorrect current password for user: {}",
+                    user.getUsername());
             throw new IllegalArgumentException("Current password is incorrect");
         }
 
-        // 2. Validate new password
         List<String> validationErrors = validationService.validateMasterPassword(newPassword);
         if (!validationErrors.isEmpty()) {
             log.warn("Password change failed - validation errors for user: {}", user.getUsername());
@@ -104,26 +103,21 @@ public class UserService {
                     String.join(", ", validationErrors));
         }
 
-        // 3. Generate new salt and derive new AES key
         byte[] newSalt = encryptionService.generateSalt();
         SecretKey newAesKey = encryptionService.deriveKeyFromPassword(newPassword, newSalt);
 
         log.debug("Derived new AES key for user: {}", user.getUsername());
 
-        // 4. Re-encrypt all credentials with new key
         int reencryptedCount = 0;
         for (Credential credential : allCredentials) {
             try {
-                // Decrypt with old key
                 String decryptedPassword = encryptionService.decrypt(
                         credential.getEncryptedPassword(),
                         currentAesKey
                 );
 
-                // Re-encrypt with new key
                 String reencryptedPassword = encryptionService.encrypt(decryptedPassword, newAesKey);
 
-                // Update credential
                 credential.setEncryptedPassword(reencryptedPassword);
                 credentialRepository.save(credential);
 
@@ -132,16 +126,15 @@ public class UserService {
             } catch (Exception e) {
                 log.error("Failed to re-encrypt credential ID: {} for user: {}",
                         credential.getId(), user.getUsername(), e);
-                throw new RuntimeException("Failed to re-encrypt credentials. Password change aborted.", e);
+                throw new RuntimeException(
+                        "Failed to re-encrypt credentials. Password change aborted.", e);
             }
         }
 
         log.info("Re-encrypted {} credentials for user: {}", reencryptedCount, user.getUsername());
 
-        // 5. Update user's password hash and encryption key
         String newPasswordHash = passwordEncoder.encode(newPassword);
 
-        // Combine new salt + new AES key
         byte[] newAesKeyBytes = newAesKey.getEncoded();
         byte[] combined = new byte[newSalt.length + newAesKeyBytes.length];
         System.arraycopy(newSalt, 0, combined, 0, newSalt.length);

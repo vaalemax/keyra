@@ -67,10 +67,11 @@ public class PasswordChangeController {
             log.warn("Password change validation failed for user: {} - {}",
                     user.getUsername(), errorMessage);
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.SYSTEM_ERROR,
-                    AuditLog.AuditStatus.FAILURE,
+                    "USER",
+                    user,
+                    user.getId(),
                     "Password change validation failed: " + errorMessage,
                     auditService.getClientIp(httpRequest),
                     auditService.getUserAgent(httpRequest)
@@ -81,12 +82,14 @@ public class PasswordChangeController {
         }
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            log.warn("Password change failed - passwords don't match for user: {}", user.getUsername());
+            log.warn("Password change failed - passwords don't match for user: {}",
+                    user.getUsername());
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.SYSTEM_ERROR,
-                    AuditLog.AuditStatus.FAILURE,
+                    "USER",
+                    user,
+                    user.getId(),
                     "Password change failed: passwords don't match",
                     auditService.getClientIp(httpRequest),
                     auditService.getUserAgent(httpRequest)
@@ -122,11 +125,13 @@ public class PasswordChangeController {
                     currentAesKey
             );
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.PASSWORD_CHANGE,
-                    AuditLog.AuditStatus.SUCCESS,
-                    "Master password changed successfully - " + allCredentials.size() + " credentials re-encrypted",
+                    "USER",
+                    user,
+                    user.getId(),
+                    "Master password changed successfully - " + allCredentials.size() +
+                            " credentials re-encrypted",
                     auditService.getClientIp(httpRequest),
                     auditService.getUserAgent(httpRequest)
             );
@@ -143,10 +148,11 @@ public class PasswordChangeController {
         } catch (IllegalArgumentException e) {
             log.warn("Password change failed for user: {} - {}", user.getUsername(), e.getMessage());
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.PASSWORD_CHANGE,
-                    AuditLog.AuditStatus.FAILURE,
+                    "USER",
+                    user,
+                    user.getId(),
                     "Password change failed: " + e.getMessage(),
                     auditService.getClientIp(httpRequest),
                     auditService.getUserAgent(httpRequest)
@@ -158,10 +164,11 @@ public class PasswordChangeController {
         } catch (Exception e) {
             log.error("Unexpected error during password change for user: {}", user.getUsername(), e);
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultFailure(
                     AuditLog.AuditAction.PASSWORD_CHANGE,
-                    AuditLog.AuditStatus.FAILURE,
+                    "USER",
+                    user,
+                    user.getId(),
                     "Password change error: " + e.getMessage(),
                     auditService.getClientIp(httpRequest),
                     auditService.getUserAgent(httpRequest)
