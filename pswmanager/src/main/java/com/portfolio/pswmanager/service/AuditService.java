@@ -193,7 +193,7 @@ public class AuditService {
                 ));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void auditVaultSuccess(AuditLog.AuditAction auditAction, String entityType, User user,
                                   Long entityId, String message, String clientIp, String userAgent) {
         this.logActionWithEntity(
@@ -208,7 +208,7 @@ public class AuditService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void auditVaultFailure(AuditLog.AuditAction auditAction, String entityType, User user,
                                   Long entityId, String reason, String clientIp, String userAgent){
         this.logActionWithEntity(
