@@ -14,10 +14,10 @@ import javax.crypto.SecretKey;
 public class SessionService {
     private final UserRepository userRepository;
 
-    // retrieve current user from db
     public User getCurrentUser(Authentication authentication){
         String username = authentication.getName();
-        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByUsername(username).orElseThrow(() ->
+                new RuntimeException("User not found"));
     }
 
     // retrieve AES key from session

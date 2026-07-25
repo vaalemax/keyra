@@ -37,9 +37,6 @@ public class TwoFactorController {
     @GetMapping("/settings/2fa")
     public String show2FASettings(Authentication authentication, Model model) {
         User user = sessionService.getCurrentUser(authentication);
-
-        log.debug("2FA settings page accessed by user: {}", user.getUsername());
-
         model.addAttribute("twoFactorEnabled", user.isTwoFactorEnabled());
 
         return "login/two-factor";
