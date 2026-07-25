@@ -3,9 +3,12 @@ package com.portfolio.pswmanager.model.dto;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+
+@Getter
+@Setter
 public class PasswordChangeRequest {
 
     @NotBlank(message = "Current password is required")

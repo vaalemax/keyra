@@ -2,13 +2,15 @@ package com.portfolio.pswmanager.model.dto;
 
 import com.portfolio.pswmanager.model.AuditLog;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class AuditLogDTO {
 
