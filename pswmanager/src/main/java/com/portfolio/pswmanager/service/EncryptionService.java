@@ -132,4 +132,13 @@ public class EncryptionService {
         }
         return new SecretKeySpec(keyBytes, "AES");
     }
+
+    public SecretKey deriveAesKey(String encryptionKey){
+        byte[] combined = Base64.getDecoder().decode(encryptionKey);
+        byte[] salt = new byte[16];
+        byte[] keyBytes = new byte[32];
+        System.arraycopy(combined, 0, salt, 0, 16);
+        System.arraycopy(combined, 16, keyBytes, 0, 32);
+        return this.recreateKey(keyBytes);
+    }
 }
