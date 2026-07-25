@@ -1,5 +1,6 @@
 package com.portfolio.pswmanager.model.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -16,4 +17,9 @@ public class PasswordChangeRequest {
 
     @NotBlank(message = "Password confirmation is required")
     private String confirmPassword;
+
+    @AssertTrue(message = "Passwords do not match")
+    private boolean isPasswordConfirmed() {
+        return newPassword == null || newPassword.equals(confirmPassword);
+    }
 }

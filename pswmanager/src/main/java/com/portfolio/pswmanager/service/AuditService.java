@@ -111,7 +111,7 @@ public class AuditService {
     ) {
         try {
             AuditLog auditLog = new AuditLog();
-            auditLog.setUser(null); // User doesn't exist or wrong password
+            auditLog.setUser(null);
             auditLog.setAction(AuditLog.AuditAction.LOGIN_FAILURE);
             auditLog.setStatus(AuditLog.AuditStatus.FAILURE);
             auditLog.setDetails("Username: " + username + " - " + details);
