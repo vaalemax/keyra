@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class CredentialDTO{
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Service name cannot be empty")
     @Size(min = 2, max = 100, message = "Service name needs between 2-100 characters")
@@ -35,7 +35,7 @@ public class CredentialDTO{
     @Size(max = 1000, message = "Notes cannot have over 1000 characters")
     private String notes;
 
-    @NotNull(message = "Category is required")
+    @NotBlank(message = "Category is required")
     private String category = "other";
 
     private LocalDateTime createdAt;
