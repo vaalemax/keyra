@@ -82,9 +82,15 @@ public class UserService {
             throw new IllegalArgumentException("Current password is incorrect");
         }
 
+        if (currentPassword.equals(newPassword)) {
+            log.warn("Password change failed - new password same as current for user: {}", user.getUsername());
+            throw new IllegalArgumentException("New password must be different from current password");
+        }
+
         List<String> validationErrors = validationService.validateMasterPassword(newPassword);
         if (!validationErrors.isEmpty()) {
-            log.warn("Password change failed - validation errors for user: {}", user.getUsername());
+            log.warn("Password change failed - validation errors for user: {} - {}",
+                    user.getUsername(), String.join(", ", validationErrors));
             throw new IllegalArgumentException("New password does not meet requirements: " +
                     String.join(", ", validationErrors));
         }
