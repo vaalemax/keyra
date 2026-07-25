@@ -38,8 +38,8 @@ public class TwoFactorService {
     private final UserService userService;
 
 
-    public TwoFactorService(AuditService auditService, TwoFactorService twoFactorService,
-                            UserService userService, UserRepository userRepository, EncryptionService encryptionService) {
+    public TwoFactorService(AuditService auditService, UserService userService,
+                            UserRepository userRepository, EncryptionService encryptionService) {
         this.auditService = auditService;
         this.googleAuthenticator = new GoogleAuthenticator();
         this.userRepository = userRepository;
