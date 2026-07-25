@@ -89,10 +89,7 @@ public class TwoFactorService {
     }
 
     public boolean verifyCode(String secret, int code) {
-        log.debug("Verifying TOTP code for secret (first 4 chars): {}...", secret.substring(0, 4));
-        boolean isValid = googleAuthenticator.authorize(secret, code);
-        log.debug("TOTP code verification result: {}", isValid);
-        return isValid;
+        return googleAuthenticator.authorize(secret, code);
     }
 
     public boolean verifyBackupCode(String providedCode, List<String> backupCodes, Long userId) {

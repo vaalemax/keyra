@@ -151,17 +151,12 @@ public class UserService {
         log.info("Master password changed successfully for user: {}", user.getUsername());
     }
 
-    /**
-     * Enable 2FA for user.
-     */
     @Transactional
     public void enableTwoFactor(User user, String secret, List<String> backupCodes) {
-        log.info("Enabling 2FA for user: {}", user.getUsername());
 
         user.setTwoFactorEnabled(true);
         user.setTwoFactorSecret(secret);
 
-        // Store backup codes as JSON
         try {
             ObjectMapper mapper = new ObjectMapper();
             String backupCodesJson = mapper.writeValueAsString(backupCodes);

@@ -78,8 +78,6 @@ public class TwoFactorController {
     ) {
         User user = sessionService.getCurrentUser(authentication);
 
-        log.info("Enabling 2FA for user: {}", user.getUsername());
-
         try {
             int totpCode = Integer.parseInt(code);
             boolean isValid = twoFactorService.verifyCode(secret, totpCode);
@@ -87,10 +85,11 @@ public class TwoFactorController {
             if (!isValid) {
                 log.warn("2FA setup failed - invalid TOTP code for user: {}", user.getUsername());
 
-                auditService.logAction(
-                        user,
+                auditService.auditVaultFailure(
                         AuditLog.AuditAction.SYSTEM_ERROR,
-                        AuditLog.AuditStatus.FAILURE,
+                        "USER",
+                        user,
+                        user.getId(),
                         "2FA setup failed: invalid verification code",
                         auditService.getClientIp(request),
                         auditService.getUserAgent(request)
@@ -105,23 +104,23 @@ public class TwoFactorController {
 
             userService.enableTwoFactor(user, secret, backupCodesList);
 
-            auditService.logAction(
-                    user,
+            auditService.auditVaultSuccess(
                     AuditLog.AuditAction.TWO_FA_ENABLED,
-                    AuditLog.AuditStatus.SUCCESS,
+                    "USER",
+                    user,
+                    user.getId(),
                     "Two-Factor Authentication enabled",
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
             );
-
-            log.info("2FA enabled successfully for user: {}", user.getUsername());
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Two-Factor Authentication enabled successfully!");
 
         } catch (NumberFormatException e) {
             log.warn("2FA setup failed - invalid code format for user: {}", user.getUsername());
-            redirectAttributes.addFlashAttribute("errorMessage", "Invalid code format");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Invalid code format");
             return "redirect:/settings/2fa/setup";
 
         } catch (Exception e) {
