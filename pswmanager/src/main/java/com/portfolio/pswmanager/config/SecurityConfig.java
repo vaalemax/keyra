@@ -25,7 +25,7 @@ public class SecurityConfig {
     private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http){
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
 
