@@ -5,7 +5,6 @@ import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.repository.UserRepository;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.EncryptionService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
@@ -26,9 +24,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
 
-    private final UserRepository userRepository;
-    private final EncryptionService encryptionService;
     private final AuditService auditService;
+
+    private final EncryptionService encryptionService;
+
+    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -53,14 +53,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         try {
             String encryptionKey = user.getEncryptionKey();
-            byte[] combined = Base64.getDecoder().decode(encryptionKey);
-
-            byte[] salt = new byte[16];
-            byte[] keyBytes = new byte[32];
-            System.arraycopy(combined, 0, salt, 0, 16);
-            System.arraycopy(combined, 16, keyBytes, 0, 32);
-
-            SecretKey aesKey = encryptionService.recreateKey(keyBytes);
+            SecretKey aesKey = encryptionService.deriveAesKey(encryptionKey);
 
             HttpSession session = request.getSession();
             session.setAttribute("AES_KEY", aesKey);
