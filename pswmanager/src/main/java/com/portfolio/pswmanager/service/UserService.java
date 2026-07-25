@@ -20,11 +20,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
-    private final EncryptionService encryptionService;
-    private final PasswordEncoder passwordEncoder;
-    private final ValidationService validationService;
     private final CredentialRepository credentialRepository;
+
+    private final EncryptionService encryptionService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final UserRepository userRepository;
+
+    private final ValidationService validationService;
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
