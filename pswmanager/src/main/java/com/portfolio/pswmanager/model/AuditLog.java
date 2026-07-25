@@ -1,7 +1,8 @@
 package com.portfolio.pswmanager.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +12,8 @@ import java.time.LocalDateTime;
         @Index(name = "idx_audit_timestamp", columnList = "timestamp"),
         @Index(name = "idx_audit_action", columnList = "action")
 })
-@Data
+@Getter
+@Setter
 public class AuditLog {
 
     @Id
