@@ -21,10 +21,6 @@ public class PasswordController {
 
     @PostMapping("/generate")
     public ResponseEntity<?> generatePassword(@RequestBody PasswordGenerationRequest request) {
-        log.debug("Password generation request - length: {}, uppercase: {}, lowercase: {}, digits: {}, symbols: {}",
-                request.getLength(), request.isUseUppercase(), request.isUseLowercase(),
-                request.isUseDigits(), request.isUseSymbols());
-
         try {
             String password = passwordGeneratorService.generatePassword(
                     request.getLength(),
@@ -34,10 +30,7 @@ public class PasswordController {
                     request.isUseSymbols(),
                     request.isNoAmbiguous()
             );
-            log.info("Password generated successfully - length: {}", password.length());
-
             return ResponseEntity.ok(new PasswordGenerationResponse(password, password.length()));
-
         } catch (IllegalArgumentException e) {
             log.warn("Password generation failed - validation error: {}", e.getMessage());
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));

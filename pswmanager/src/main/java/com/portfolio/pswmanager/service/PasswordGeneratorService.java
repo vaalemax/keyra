@@ -19,18 +19,6 @@ public class PasswordGeneratorService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    /**
-     * Genera una password sicura con i parametri specificati.
-     *
-     * @param length Lunghezza password (min 8, max 128)
-     * @param useUppercase Includi maiuscole
-     * @param useLowercase Includi minuscole
-     * @param useDigits Includi numeri
-     * @param useSymbols Includi simboli
-     * @param noAmbiguous Escludi caratteri ambigui (I,l,1,O,0)
-     * @return Password generata
-     * @throws IllegalArgumentException se parametri non validi
-     */
     public String generatePassword(int length, boolean useUppercase, boolean useLowercase, boolean useDigits, boolean useSymbols, boolean noAmbiguous) {
         validateParameters(length, useUppercase, useLowercase, useDigits, useSymbols);
 
@@ -63,23 +51,19 @@ public class PasswordGeneratorService {
     private String buildPassword(int length, String charset, List<String> requiredPools) {
         List<Character> password = new ArrayList<>();
 
-        // 1. Aggiungi un carattere da ogni pool richiesto
         for (String pool : requiredPools) {
             password.add(pool.charAt(secureRandom.nextInt(pool.length())));
         }
 
-        // 2. Riempi il resto con caratteri casuali dal charset completo
         while (password.size() < length) {
             password.add(charset.charAt(secureRandom.nextInt(charset.length())));
         }
 
-        // 3. Shuffle (Fisher-Yates)
         for (int i = password.size() - 1; i > 0; i--) {
             int j = secureRandom.nextInt(i + 1);
             Collections.swap(password, i, j);
         }
 
-        // 4. Converti in String
         StringBuilder result = new StringBuilder(length);
         for (Character c : password) {
             result.append(c);
