@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Objects;
+
 @Controller
 public class CustomErrorController implements ErrorController {
     private static final Logger log = LoggerFactory.getLogger(CustomErrorController.class);
@@ -24,18 +26,16 @@ public class CustomErrorController implements ErrorController {
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
 
-            log.warn("HTTP Error {} occurred - URI: {}, Message: {}", statusCode, uri, message);
+            log.warn("HTTP Error {} occurred - URI: {}, Message: {}",
+                    statusCode, uri, message);
 
             model.addAttribute("statusCode", statusCode);
             model.addAttribute("uri", uri);
             model.addAttribute("message", message);
 
             if (statusCode == 429) {
-                if (retryAfter != null) {
-                    model.addAttribute("retryAfter", retryAfter);
-                } else {
-                    model.addAttribute("retryAfter", 60);
-                }
+                model.addAttribute("retryAfter",
+                        Objects.requireNonNullElse(retryAfter, 60));
             }
 
             if(statusCode == 403) {
