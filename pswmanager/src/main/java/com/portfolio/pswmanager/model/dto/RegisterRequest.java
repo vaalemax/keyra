@@ -1,6 +1,5 @@
 package com.portfolio.pswmanager.model.dto;
 
-import com.portfolio.pswmanager.validation.StrongMasterPassword;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -19,7 +18,6 @@ public class RegisterRequest {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @StrongMasterPassword
     private String password;
 
     @NotBlank(message = "Password confirmation is required")
