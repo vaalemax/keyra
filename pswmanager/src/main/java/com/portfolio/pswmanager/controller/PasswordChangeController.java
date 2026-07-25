@@ -81,25 +81,6 @@ public class PasswordChangeController {
             return "redirect:/settings/password";
         }
 
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            log.warn("Password change failed - passwords don't match for user: {}",
-                    user.getUsername());
-
-            auditService.auditVaultFailure(
-                    AuditLog.AuditAction.SYSTEM_ERROR,
-                    "USER",
-                    user,
-                    user.getId(),
-                    "Password change failed: passwords don't match",
-                    auditService.getClientIp(httpRequest),
-                    auditService.getUserAgent(httpRequest)
-            );
-
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "New password and confirmation do not match");
-            return "redirect:/settings/password";
-        }
-
         if (request.getCurrentPassword().equals(request.getNewPassword())) {
             log.warn("Password change failed - new password same as current for user: {}",
                     user.getUsername());
