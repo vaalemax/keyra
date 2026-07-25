@@ -49,7 +49,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Credential> credentials = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "user")
     private List<AuditLog> auditLogs = new ArrayList<>();
 
     public boolean isTwoFactorEnabled() {
