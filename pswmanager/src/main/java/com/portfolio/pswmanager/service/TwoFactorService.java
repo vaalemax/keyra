@@ -33,8 +33,6 @@ public class TwoFactorService {
 
     private final GoogleAuthenticator googleAuthenticator;
 
-    private final TwoFactorService twoFactorService;
-
     private final UserRepository userRepository;
 
     private final UserService userService;
@@ -44,7 +42,6 @@ public class TwoFactorService {
                             UserService userService, UserRepository userRepository, EncryptionService encryptionService) {
         this.auditService = auditService;
         this.googleAuthenticator = new GoogleAuthenticator();
-        this.twoFactorService = twoFactorService;
         this.userRepository = userRepository;
         this.userService = userService;
         this.encryptionService = encryptionService;
@@ -124,10 +121,10 @@ public class TwoFactorService {
                 log.debug("Verifying backup code for user: {}", user.getUsername());
 
                 List<String> backupCodes = userService.getBackupCodes(user);
-                isValid = twoFactorService.verifyBackupCode(code.trim(), backupCodes, userId);
+                isValid = this.verifyBackupCode(code.trim(), backupCodes, userId);
 
                 if (isValid) {
-                    List<String> updatedCodes = twoFactorService.removeBackupCode(code.trim(),
+                    List<String> updatedCodes = this.removeBackupCode(code.trim(),
                             backupCodes);
                     userService.updateBackupCodes(user, updatedCodes);
 
@@ -139,7 +136,7 @@ public class TwoFactorService {
             } else {
                 log.debug("Verifying TOTP code for user: {}", user.getUsername());
                 int totpCode = Integer.parseInt(code.trim());
-                isValid = twoFactorService.verifyCode(user.getTwoFactorSecret(), totpCode);
+                isValid = this.verifyCode(user.getTwoFactorSecret(), totpCode);
             }
         } catch (NumberFormatException e) {
             log.warn("2FA verification failed - invalid code format for user: {}",
