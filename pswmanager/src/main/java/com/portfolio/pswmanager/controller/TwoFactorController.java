@@ -142,8 +142,6 @@ public class TwoFactorController {
     ) {
         User user = sessionService.getCurrentUser(authentication);
 
-        log.info("Disabling 2FA for user: {}", user.getUsername());
-
         if (!userService.verifyPassword(user, password)) {
             log.warn("2FA disable failed - incorrect password for user: {}", user.getUsername());
 
@@ -154,16 +152,15 @@ public class TwoFactorController {
 
         userService.disableTwoFactor(user);
 
-        auditService.logAction(
-                user,
+        auditService.auditVaultSuccess(
                 AuditLog.AuditAction.TWO_FA_DISABLED,
-                AuditLog.AuditStatus.SUCCESS,
+                "USER",
+                user,
+                user.getId(),
                 "Two-Factor Authentication disabled",
                 auditService.getClientIp(request),
                 auditService.getUserAgent(request)
         );
-
-        log.info("2FA disabled successfully for user: {}", user.getUsername());
 
         redirectAttributes.addFlashAttribute("successMessage",
                 "Two-Factor Authentication disabled");

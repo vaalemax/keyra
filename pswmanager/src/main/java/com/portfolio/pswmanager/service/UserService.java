@@ -170,9 +170,6 @@ public class UserService {
         log.info("2FA enabled successfully for user: {}", user.getUsername());
     }
 
-    /**
-     * Disable 2FA for user.
-     */
     @Transactional
     public void disableTwoFactor(User user) {
         log.info("Disabling 2FA for user: {}", user.getUsername());
@@ -212,19 +209,10 @@ public class UserService {
         }
     }
 
-    /**
-     * Verify user's password.
-     *
-     * @param user The user
-     * @param password Password to verify
-     * @return true if password is correct, false otherwise
-     */
     public boolean verifyPassword(User user, String password) {
         log.debug("Verifying password for user: {}", user.getUsername());
         boolean isValid = passwordEncoder.matches(password, user.getPasswordHash());
         log.debug("Password verification result for user {}: {}", user.getUsername(), isValid);
         return isValid;
     }
-
-
 }
