@@ -1,6 +1,5 @@
 package com.portfolio.pswmanager.service;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ValidationService {
 
     private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
@@ -26,27 +24,19 @@ public class ValidationService {
             return errors;
         }
 
-        if (password.length() < 8) {
+        if (password.length() < 8)
             errors.add("must be at least 8 characters");
-        }
-        if (!password.matches(".*[A-Z].*")) {
+        if (!password.matches(".*[A-Z].*"))
             errors.add("must contain at least one uppercase letter");
-        }
-        if (!password.matches(".*[a-z].*")) {
+        if (!password.matches(".*[a-z].*"))
             errors.add("must contain at least one lowercase letter");
-        }
-        if (!password.matches(".*[0-9].*")) {
+        if (!password.matches(".*[0-9].*"))
             errors.add("must contain at least one number");
-        }
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*"))
             errors.add("must contain at least one special character");
-        }
 
-        if (!errors.isEmpty()) {
+        if (!errors.isEmpty())
             log.debug("Master password validation failed: {}", String.join(", ", errors));
-        } else {
-            log.debug("Master password validation passed");
-        }
 
         return errors;
     }
