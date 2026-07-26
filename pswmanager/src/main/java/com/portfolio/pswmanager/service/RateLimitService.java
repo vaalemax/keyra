@@ -1,13 +1,13 @@
 package com.portfolio.pswmanager.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Slf4j
 @Service
 public class RateLimitService {
 
@@ -16,6 +16,8 @@ public class RateLimitService {
     private static final int NORMAL_LIMIT = 10;  // requests per minute
     private static final int STRICT_LIMIT = 5;   // requests per minute
     private static final long WINDOW_MS = 60_000; // 1 minute
+
+    private static final Logger log = LoggerFactory.getLogger(RateLimitService.class);
 
     public boolean isAllowed(String key) {
         return checkRateLimit(key, NORMAL_LIMIT);

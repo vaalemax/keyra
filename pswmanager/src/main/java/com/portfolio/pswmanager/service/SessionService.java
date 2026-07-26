@@ -22,9 +22,8 @@ public class SessionService {
 
     public SecretKey getAesKeyFromSession(HttpSession session){
         SecretKey aesKey = (SecretKey) session.getAttribute("AES_KEY");
-        if(aesKey==null){
+        if(aesKey==null)
             throw new RuntimeException("AES key not found. Try logging in again.");
-        }
         return aesKey;
     }
 }

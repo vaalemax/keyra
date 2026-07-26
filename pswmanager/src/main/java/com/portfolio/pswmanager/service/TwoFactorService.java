@@ -12,7 +12,8 @@ import com.portfolio.pswmanager.repository.UserRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-@Slf4j
 @Service
 public class TwoFactorService {
 
@@ -37,9 +37,12 @@ public class TwoFactorService {
 
     private final UserService userService;
 
+    private static final Logger log = LoggerFactory.getLogger(TwoFactorService.class);
 
-    public TwoFactorService(AuditService auditService, UserService userService,
-                            UserRepository userRepository, EncryptionService encryptionService) {
+    public TwoFactorService(AuditService auditService,
+                            UserService userService,
+                            UserRepository userRepository,
+                            EncryptionService encryptionService) {
         this.auditService = auditService;
         this.googleAuthenticator = new GoogleAuthenticator();
         this.userRepository = userRepository;
@@ -55,10 +58,12 @@ public class TwoFactorService {
     public String generateQrCodeUrl(String username, String secret) {
         String issuer = "VaultShield";
         return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
-                issuer, username, new GoogleAuthenticatorKey.Builder(secret).build());
+                issuer, username,
+                new GoogleAuthenticatorKey.Builder(secret).build());
     }
 
-    public String generateQrCodeImage(String qrCodeUrl) throws WriterException, IOException {
+    public String generateQrCodeImage(String qrCodeUrl)
+            throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(
                 qrCodeUrl, BarcodeFormat.QR_CODE, 300, 300);
@@ -73,7 +78,6 @@ public class TwoFactorService {
     }
 
     public List<String> generateBackupCodes() {
-
         List<String> codes = new ArrayList<>();
         SecureRandom random = new SecureRandom();
 
@@ -81,7 +85,6 @@ public class TwoFactorService {
             int code = 10000000 + random.nextInt(90000000);
             codes.add(String.valueOf(code));
         }
-
         return codes;
     }
 
@@ -89,29 +92,15 @@ public class TwoFactorService {
         return googleAuthenticator.authorize(secret, code);
     }
 
-    public boolean verifyBackupCode(String providedCode, List<String> backupCodes, Long userId) {
-        if (backupCodes == null || backupCodes.isEmpty()) {
-            log.warn("No backup codes available");
-            return false;
-        }
-
-        boolean isValid = backupCodes.contains(providedCode);
-        log.debug("Backup code verification result for user ID {}: {}",userId, isValid);
-
-        return isValid;
-    }
-
-    public List<String> removeBackupCode(String usedCode, List<String> backupCodes) {
-        List<String> updatedCodes = new ArrayList<>(backupCodes);
-        updatedCodes.remove(usedCode);
-        return updatedCodes;
-    }
-
-    public TwoFactorVerificationResult verify(Long userId, String code, boolean useBackupCode,
-                                              String clientIp, String userAgent) {
+    public TwoFactorVerificationResult verify(Long userId,
+                                              String code,
+                                              boolean useBackupCode,
+                                              String clientIp,
+                                              String userAgent) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
+                .orElseThrow(() -> new IllegalStateException(
+                        "User not found: " + userId));
 
         boolean isValid;
         String warningMessage = null;
@@ -129,8 +118,8 @@ public class TwoFactorService {
                     userService.updateBackupCodes(user, updatedCodes);
 
                     if (updatedCodes.size() <= 2) {
-                        warningMessage = "Warning: You have only " + updatedCodes.size() +
-                                " backup codes remaining.";
+                        warningMessage = "Warning: You have only "
+                                + updatedCodes.size() + " backup codes remaining.";
                     }
                 }
             } else {
@@ -145,10 +134,16 @@ public class TwoFactorService {
         }
 
         if (!isValid) {
-            log.warn("2FA verification failed - invalid code for user: {}", user.getUsername());
+            log.warn("2FA verification failed - invalid code for user: {}",
+                    user.getUsername());
             auditService.auditVaultFailure(
-                    AuditLog.AuditAction.LOGIN_FAILURE, "USER", user, userId,
-                    "2FA verification failed - invalid code", clientIp, userAgent
+                    AuditLog.AuditAction.LOGIN_FAILURE,
+                    "USER",
+                    user,
+                    userId,
+                    "2FA verification failed - invalid code",
+                    clientIp,
+                    userAgent
             );
             return TwoFactorVerificationResult.invalidCode();
         }
@@ -158,22 +153,52 @@ public class TwoFactorService {
 
             log.info("2FA verification successful for user: {}", user.getUsername());
             auditService.auditVaultSuccess(
-                    AuditLog.AuditAction.LOGIN_SUCCESS, "USER", user, userId,
+                    AuditLog.AuditAction.LOGIN_SUCCESS,
+                    "USER",
+                    user,
+                    userId,
                     "Successful login with 2FA" +
                             (useBackupCode ? " (backup code)" : ""),
-                    clientIp, userAgent
+                    clientIp,
+                    userAgent
             );
 
             return TwoFactorVerificationResult.success(aesKey, warningMessage);
 
         } catch (Exception e) {
-            log.error("Error deriving AES key after 2FA for user: {}", user.getUsername(), e);
+            log.error("Error deriving AES key after 2FA for user: {}",
+                    user.getUsername(), e);
             auditService.auditVaultFailure(
-                    AuditLog.AuditAction.SYSTEM_ERROR, "USER", user, userId,
-                    "2FA verification error: " + e.getMessage(), clientIp, userAgent
+                    AuditLog.AuditAction.SYSTEM_ERROR,
+                    "USER",
+                    user,
+                    userId,
+                    "2FA verification error: " + e.getMessage(),
+                    clientIp,
+                    userAgent
             );
             return TwoFactorVerificationResult.error(
                     "An error occurred. Please try again.");
         }
+    }
+
+    private boolean verifyBackupCode(String providedCode, List<String> backupCodes,
+                                     Long userId) {
+        if (backupCodes == null || backupCodes.isEmpty()) {
+            log.warn("No backup codes available");
+            return false;
+        }
+
+        boolean isValid = backupCodes.contains(providedCode);
+        log.debug("Backup code verification result for user ID {}: {}",
+                userId, isValid);
+
+        return isValid;
+    }
+
+    private List<String> removeBackupCode(String usedCode, List<String> backupCodes) {
+        List<String> updatedCodes = new ArrayList<>(backupCodes);
+        updatedCodes.remove(usedCode);
+        return updatedCodes;
     }
 }
