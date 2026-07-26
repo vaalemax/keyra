@@ -9,7 +9,6 @@ import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
 import com.portfolio.pswmanager.model.dto.VaultExportDTO;
 import com.portfolio.pswmanager.repository.CredentialRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CredentialService {
 
     private final CredentialMapper credentialMapper;
@@ -36,6 +34,16 @@ public class CredentialService {
     private final ValidationService validationService;
 
     private static final Logger log = LoggerFactory.getLogger(CredentialService.class);
+
+    public CredentialService(CredentialMapper credentialMapper,
+                             CredentialRepository credentialRepository,
+                             EncryptionService encryptionService,
+                             ValidationService validationService) {
+        this.credentialMapper = credentialMapper;
+        this.credentialRepository = credentialRepository;
+        this.encryptionService = encryptionService;
+        this.validationService = validationService;
+    }
 
     @Transactional(readOnly = true)
     public List<CredentialDTO> getAllCredentialsForUser(User user, SecretKey aesKey) {

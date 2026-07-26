@@ -5,7 +5,6 @@ import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.TwoFactorService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -16,15 +15,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequiredArgsConstructor
 public class TwoFactorVerificationController {
 
     private final AuditService auditService;
 
     private final TwoFactorService twoFactorService;
 
-
     private static final Logger log = LoggerFactory.getLogger(TwoFactorVerificationController.class);
+
+    public TwoFactorVerificationController(AuditService auditService,
+                                           TwoFactorService twoFactorService) {
+        this.auditService = auditService;
+        this.twoFactorService = twoFactorService;
+    }
 
     @GetMapping("/login/2fa")
     public String show2FAVerification(HttpSession session, Model model) {

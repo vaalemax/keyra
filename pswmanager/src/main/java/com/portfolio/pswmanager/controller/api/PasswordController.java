@@ -4,7 +4,6 @@ import com.portfolio.pswmanager.model.dto.ErrorResponse;
 import com.portfolio.pswmanager.model.dto.PasswordGenerationRequest;
 import com.portfolio.pswmanager.model.dto.PasswordGenerationResponse;
 import com.portfolio.pswmanager.service.PasswordGeneratorService;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +11,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/password")
-@RequiredArgsConstructor
 public class PasswordController {
 
     private final PasswordGeneratorService passwordGeneratorService;
+
     private static final Logger log = LoggerFactory.getLogger(PasswordController.class);
+
+    public PasswordController(PasswordGeneratorService passwordGeneratorService) {
+        this.passwordGeneratorService = passwordGeneratorService;
+    }
 
     @PostMapping("/generate")
     public ResponseEntity<?> generatePassword(@RequestBody PasswordGenerationRequest request) {

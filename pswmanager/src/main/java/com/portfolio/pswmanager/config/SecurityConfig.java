@@ -1,7 +1,6 @@
 package com.portfolio.pswmanager.config;
 
 import com.portfolio.pswmanager.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,12 +16,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
-    private final CustomAuthenticationSuccessHandler successHandler;
     private final CustomAuthenticationFailureHandler failureHandler;
+
+    private final CustomAuthenticationSuccessHandler successHandler;
+
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
+
     private final RateLimitingFilter rateLimitingFilter;
+
+    public SecurityConfig(CustomAuthenticationFailureHandler failureHandler,
+                          CustomAuthenticationSuccessHandler successHandler,
+                          CustomLogoutSuccessHandler logoutSuccessHandler,
+                          RateLimitingFilter rateLimitingFilter) {
+        this.failureHandler = failureHandler;
+        this.successHandler = successHandler;
+        this.logoutSuccessHandler = logoutSuccessHandler;
+        this.rateLimitingFilter = rateLimitingFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

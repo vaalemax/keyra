@@ -6,7 +6,6 @@ import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +22,19 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/session")
-@RequiredArgsConstructor
 public class SessionApiController {
+
+    private final AuditService auditService;
+
+    private final SessionService sessionService;
 
     private static final Logger log = LoggerFactory.getLogger(SessionApiController.class);
 
-    private final SessionService sessionService;
-    private final AuditService auditService;
+    public SessionApiController(AuditService auditService,
+                                SessionService sessionService) {
+        this.auditService = auditService;
+        this.sessionService = sessionService;
+    }
 
     /**
      * Refreshes the user's session to extend timeout.

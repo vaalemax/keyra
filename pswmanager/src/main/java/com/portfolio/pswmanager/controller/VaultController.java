@@ -10,7 +10,6 @@ import com.portfolio.pswmanager.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequiredArgsConstructor
 public class VaultController {
 
     private final AuditService auditService;
@@ -44,6 +42,14 @@ public class VaultController {
     private final SessionService sessionService;
 
     private static final Logger log = LoggerFactory.getLogger(VaultController.class);
+
+    public VaultController(AuditService auditService,
+                           CredentialService credentialService,
+                           SessionService sessionService) {
+        this.auditService = auditService;
+        this.credentialService = credentialService;
+        this.sessionService = sessionService;
+    }
 
     @GetMapping("/vault")
     public String getVault(@RequestParam(required = false) String category,

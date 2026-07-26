@@ -4,7 +4,6 @@ import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.repository.CredentialRepository;
 import com.portfolio.pswmanager.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +17,6 @@ import java.util.Base64;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final CredentialRepository credentialRepository;
 
@@ -31,6 +29,18 @@ public class UserService {
     private final ValidationService validationService;
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
+    public UserService(CredentialRepository credentialRepository,
+                       EncryptionService encryptionService,
+                       PasswordEncoder passwordEncoder,
+                       UserRepository userRepository,
+                       ValidationService validationService) {
+        this.credentialRepository = credentialRepository;
+        this.encryptionService = encryptionService;
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+        this.validationService = validationService;
+    }
 
     public void registerUser(String username, String masterPassword) throws Exception {
 

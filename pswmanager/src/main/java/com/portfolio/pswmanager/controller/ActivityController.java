@@ -5,7 +5,6 @@ import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.AuditLogDTO;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.SessionService;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -22,7 +21,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequiredArgsConstructor
 public class ActivityController {
 
     private final AuditService auditService;
@@ -30,6 +28,12 @@ public class ActivityController {
     private final SessionService sessionService;
 
     private static final Logger log = LoggerFactory.getLogger(ActivityController.class);
+
+    public ActivityController(AuditService auditService,
+                              SessionService sessionService) {
+        this.auditService = auditService;
+        this.sessionService = sessionService;
+    }
 
     @GetMapping("/activity")
     public String viewActivity(

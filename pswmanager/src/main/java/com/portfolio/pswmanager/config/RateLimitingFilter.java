@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -23,22 +22,19 @@ import java.util.Set;
  * Limits requests per IP address using token bucket algorithm.
  */
 @Component
-@RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
+    private final AuditService auditService;
+
+    private final RateLimitService rateLimitService;
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
 
-    private final RateLimitService rateLimitService;
-    private final AuditService auditService;
-
-    // Endpoints that require strict rate limiting
     private static final Set<String> STRICT_ENDPOINTS = Set.of(
             "/login",
             "/register",
             "/api/password/generate"
     );
 
-    // Endpoints that require normal rate limiting
     private static final Set<String> PROTECTED_ENDPOINTS = Set.of(
             "/vault/add",
             "/vault/edit",
@@ -46,6 +42,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             "/vault/import",
             "/vault/export"
     );
+
+    public RateLimitingFilter(AuditService auditService,
+                              RateLimitService rateLimitService) {
+        this.auditService = auditService;
+        this.rateLimitService = rateLimitService;
+    }
 
     @Override
     protected void doFilterInternal(

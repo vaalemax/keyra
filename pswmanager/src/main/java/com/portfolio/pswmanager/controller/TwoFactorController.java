@@ -7,7 +7,6 @@ import com.portfolio.pswmanager.service.SessionService;
 import com.portfolio.pswmanager.service.TwoFactorService;
 import com.portfolio.pswmanager.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -21,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequiredArgsConstructor
 public class TwoFactorController {
 
     private final AuditService auditService;
@@ -33,6 +31,16 @@ public class TwoFactorController {
     private final UserService userService;
 
     private static final Logger log = LoggerFactory.getLogger(TwoFactorController.class);
+
+    public TwoFactorController(AuditService auditService,
+                               SessionService sessionService,
+                               TwoFactorService twoFactorService,
+                               UserService userService) {
+        this.auditService = auditService;
+        this.sessionService = sessionService;
+        this.twoFactorService = twoFactorService;
+        this.userService = userService;
+    }
 
     @GetMapping("/settings/2fa")
     public String show2FASettings(Authentication authentication, Model model) {

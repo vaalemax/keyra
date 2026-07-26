@@ -8,7 +8,6 @@ import com.portfolio.pswmanager.service.EncryptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -19,16 +18,23 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
 
     private final AuditService auditService;
 
     private final EncryptionService encryptionService;
 
     private final UserRepository userRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
+
+    public CustomAuthenticationSuccessHandler(AuditService auditService,
+                                              EncryptionService encryptionService,
+                                              UserRepository userRepository) {
+        this.auditService = auditService;
+        this.encryptionService = encryptionService;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public void onAuthenticationSuccess(

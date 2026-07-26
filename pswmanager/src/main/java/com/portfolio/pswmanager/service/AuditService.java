@@ -4,7 +4,6 @@ import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.repository.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,12 +20,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
     private static final Logger log = LoggerFactory.getLogger(AuditService.class);
+
+    public AuditService(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
 
     @Transactional(readOnly = true)
     public Page<AuditLog> getUserAuditLogs(Long userId, Pageable pageable) {

@@ -6,7 +6,6 @@ import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuditService auditService;
@@ -24,6 +22,11 @@ public class AuthController {
     private final UserService userService;
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
+    public AuthController(AuditService auditService, UserService userService) {
+        this.auditService = auditService;
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
     public String registerUser(

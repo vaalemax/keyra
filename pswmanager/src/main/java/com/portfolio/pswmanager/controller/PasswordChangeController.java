@@ -11,7 +11,6 @@ import com.portfolio.pswmanager.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -27,7 +26,6 @@ import javax.crypto.SecretKey;
 import java.util.List;
 
 @Controller
-@RequiredArgsConstructor
 public class PasswordChangeController {
 
     private final AuditService auditService;
@@ -39,6 +37,16 @@ public class PasswordChangeController {
     private final UserService userService;
 
     private static final Logger log = LoggerFactory.getLogger(PasswordChangeController.class);
+
+    public PasswordChangeController(AuditService auditService,
+                                    CredentialRepository credentialRepository,
+                                    SessionService sessionService,
+                                    UserService userService) {
+        this.auditService = auditService;
+        this.credentialRepository = credentialRepository;
+        this.sessionService = sessionService;
+        this.userService = userService;
+    }
 
     @GetMapping("/settings/password")
     public String showPasswordChangePage(Model model) {

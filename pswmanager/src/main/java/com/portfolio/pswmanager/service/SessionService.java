@@ -3,16 +3,18 @@ package com.portfolio.pswmanager.service;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 
 @Service
-@RequiredArgsConstructor
 public class SessionService {
     private final UserRepository userRepository;
+
+    public SessionService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public User getCurrentUser(Authentication authentication){
         String username = authentication.getName();
