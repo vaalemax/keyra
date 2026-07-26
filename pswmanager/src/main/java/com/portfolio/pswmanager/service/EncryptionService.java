@@ -69,12 +69,8 @@ public class EncryptionService {
         }
     }
 
-    /**
-     * Derives an AES key from a password using PBKDF2.
-     */
     public SecretKey deriveKeyFromPassword(String password, byte[] salt) throws Exception {
         log.debug("Deriving AES key from password using PBKDF2");
-
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
             KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 256);
@@ -94,21 +90,6 @@ public class EncryptionService {
         return salt;
     }
 
-    /**
-     * Recreate a SecretKey from raw key bytes.
-     * Used when retrieving the AES key from the database.
-     *
-     * @param keyBytes Raw AES key bytes (32 bytes for AES-256)
-     * @return SecretKey instance
-     */
-    public SecretKey recreateKey(byte[] keyBytes) {
-        if (keyBytes.length != 32) {
-            log.warn("Invalid key length: {} bytes (expected 32 for AES-256)", keyBytes.length);
-            throw new IllegalArgumentException("Invalid AES key length. Expected 32 bytes for AES-256.");
-        }
-        return new SecretKeySpec(keyBytes, "AES");
-    }
-
     public SecretKey deriveAesKey(String encryptionKey){
         byte[] combined = Base64.getDecoder().decode(encryptionKey);
         byte[] salt = new byte[16];
@@ -116,5 +97,15 @@ public class EncryptionService {
         System.arraycopy(combined, 0, salt, 0, 16);
         System.arraycopy(combined, 16, keyBytes, 0, 32);
         return this.recreateKey(keyBytes);
+    }
+
+    private SecretKey recreateKey(byte[] keyBytes) {
+
+        // Recreate a SecretKey from raw key bytes.
+        if (keyBytes.length != 32) {
+            log.warn("Invalid key length: {} bytes (expected 32 for AES-256)", keyBytes.length);
+            throw new IllegalArgumentException("Invalid AES key length. Expected 32 bytes for AES-256.");
+        }
+        return new SecretKeySpec(keyBytes, "AES");
     }
 }

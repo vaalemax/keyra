@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.portfolio.pswmanager.mapper.CredentialMapper;
-import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.model.dto.CredentialDTO;
@@ -27,8 +26,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CredentialService {
-
-    private final AuditService auditService;
 
     private final CredentialMapper credentialMapper;
 
