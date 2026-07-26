@@ -76,7 +76,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                     request.getHeader("User-Agent")
             );
 
-
             response.sendRedirect("/vault");
 
         } catch (Exception e) {

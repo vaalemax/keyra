@@ -17,8 +17,7 @@ public class ScheduledTasks {
         this.rateLimitService = rateLimitService;
     }
 
-    // Clear rate limit cache every hour.
-    @Scheduled(cron = "0 0 * * * *")  // Every hour at :00
+    @Scheduled(cron = "0 0 * * * *")
     public void clearRateLimitCache() {
         log.info("Starting scheduled rate limit cache cleanup");
         int sizeBefore = rateLimitService.getCacheSize();

@@ -14,10 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Custom authentication failure handler.
- * Logs failed login attempts for security monitoring.
- */
 @Component
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 

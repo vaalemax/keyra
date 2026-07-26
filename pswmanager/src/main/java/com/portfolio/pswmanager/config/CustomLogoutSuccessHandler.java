@@ -16,17 +16,15 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Custom logout success handler.
- * Logs logout events for audit trail.
- */
 @Component
 public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
+    private final AuditService auditService;
+
+    private final UserRepository userRepository;
+
     private static final Logger log = LoggerFactory.getLogger(CustomLogoutSuccessHandler.class);
 
-    private final AuditService auditService;
-    private final UserRepository userRepository;
 
     public CustomLogoutSuccessHandler(AuditService auditService, UserRepository userRepository) {
         super();
@@ -45,10 +43,8 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
             String username = authentication.getName();
             log.info("User logged out: {}", username);
 
-            // Load user for audit
             User user = userRepository.findByUsername(username).orElse(null);
 
-            // Audit log logout
             auditService.logAction(
                     user,
                     AuditLog.AuditAction.LOGOUT,
