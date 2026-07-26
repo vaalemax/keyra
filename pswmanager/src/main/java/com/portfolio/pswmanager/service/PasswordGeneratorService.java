@@ -19,7 +19,8 @@ public class PasswordGeneratorService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public String generatePassword(int length, boolean useUppercase, boolean useLowercase, boolean useDigits, boolean useSymbols, boolean noAmbiguous) {
+    public String generatePassword(int length, boolean useUppercase, boolean useLowercase,
+                                   boolean useDigits, boolean useSymbols, boolean noAmbiguous) {
         validateParameters(length, useUppercase, useLowercase, useDigits, useSymbols);
 
         StringBuilder charset = new StringBuilder();
