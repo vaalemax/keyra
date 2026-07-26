@@ -10,17 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Set;
 
-/**
- * Rate limiting filter to prevent brute force attacks.
- * Limits requests per IP address using token bucket algorithm.
- */
-@Component
 public class RateLimitingFilter extends OncePerRequestFilter {
     private final AuditService auditService;
 
@@ -64,7 +58,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Check if endpoint needs rate limiting
         boolean isStrict = STRICT_ENDPOINTS.contains(uri) && "POST".equals(method);
         boolean isProtected = PROTECTED_ENDPOINTS.contains(uri) && "POST".equals(method);
 
@@ -73,29 +66,22 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Check rate limit
         boolean allowed = isStrict
                 ? rateLimitService.isStrictAllowed(ip)
                 : rateLimitService.isAllowed(ip);
 
         if (allowed) {
-            // Request allowed
             int remaining = rateLimitService.getRemainingRequests(ip, isStrict);
             response.addHeader("X-Rate-Limit-Remaining", String.valueOf(remaining));
 
             log.debug("Request allowed - IP: {}, URI: {}, Remaining: {}", ip, uri, remaining);
 
             filterChain.doFilter(request, response);
-
         } else {
-            // Request blocked
-            long waitSeconds = rateLimitService.getSecondsUntilReset(
-                    ip, isStrict
-            );
+            long waitSeconds = rateLimitService.getSecondsUntilReset(ip, isStrict);
 
             log.warn("Rate limit exceeded - IP: {}, URI: {}, Wait: {}s", ip, uri, waitSeconds);
 
-            // Audit log
             auditService.logAction(
                     null,
                     AuditLog.AuditAction.SYSTEM_ERROR,
@@ -105,7 +91,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                     request.getHeader("User-Agent")
             );
 
-            // Return 429
             response.setStatus(429);
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitSeconds));
 
@@ -113,13 +98,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             boolean wantsHtml = accept != null && accept.contains("text/html");
 
             if (wantsHtml) {
-                // Redirect to error page
                 request.setAttribute("retryAfter", waitSeconds);
 
-                // Use sendError instead of redirect
                 response.sendError(429, "Too many requests. Please try again in " + waitSeconds + " seconds.");
             } else {
-                // Return JSON for API requests
                 response.setContentType("application/json");
                 response.getWriter().write(String.format(
                         "{\"error\":\"Too many requests\",\"message\":\"Please try again in %d seconds\",\"retryAfter\":%d}",
@@ -129,9 +111,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
     }
 
-    /**
-     * Get client IP address, considering proxy headers.
-     */
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
@@ -140,7 +119,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        // Handle multiple IPs (take the first one)
         if (ip != null && ip.contains(",")) {
             ip = ip.split(",")[0].trim();
         }

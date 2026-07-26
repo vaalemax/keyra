@@ -1,8 +1,11 @@
 package com.portfolio.pswmanager.config;
 
 import com.portfolio.pswmanager.repository.UserRepository;
+import com.portfolio.pswmanager.service.AuditService;
+import com.portfolio.pswmanager.service.RateLimitService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -17,31 +20,45 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final AuditService auditService;
+
     private final CustomAuthenticationFailureHandler failureHandler;
 
     private final CustomAuthenticationSuccessHandler successHandler;
 
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
 
-    private final RateLimitingFilter rateLimitingFilter;
+    private final RateLimitService rateLimitService;
 
-    public SecurityConfig(CustomAuthenticationFailureHandler failureHandler,
+    public SecurityConfig(AuditService auditService,
+                          CustomAuthenticationFailureHandler failureHandler,
                           CustomAuthenticationSuccessHandler successHandler,
                           CustomLogoutSuccessHandler logoutSuccessHandler,
-                          RateLimitingFilter rateLimitingFilter) {
+                          RateLimitService rateLimitService) {
+        this.auditService = auditService;
         this.failureHandler = failureHandler;
         this.successHandler = successHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
-        this.rateLimitingFilter = rateLimitingFilter;
+        this.rateLimitService = rateLimitService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/login/2fa", "/login/2fa/verify", "/css/**", "/js/**", "/favicon.ico", "/.well-known/**", "/error/**").permitAll()
+                        .requestMatchers("/",
+                                "/login",
+                                "/register",
+                                "/login/2fa",
+                                "/login/2fa/verify",
+                                "/css/**",
+                                "/js/**",
+                                "/favicon.ico",
+                                "/.well-known/**",
+                                "/error/**")
+                        .permitAll()
                         .requestMatchers("/api/password/generate").authenticated()
                         .requestMatchers("/api/session/**").authenticated()
                         .requestMatchers("/settings/**").authenticated()
@@ -66,11 +83,11 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
-                        .sessionRegistry(sessionRegistry())  // ✅ Fix: usa sessionRegistry bean
+                        .sessionRegistry(sessionRegistry())
 
                 )
 
-                .csrf(csrf -> {})
+                .csrf(Customizer.withDefaults())
 
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp
@@ -91,6 +108,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RateLimitingFilter rateLimitingFilter() {
+        return new RateLimitingFilter(auditService, rateLimitService);
+    }
+
+    @Bean
     public org.springframework.security.core.session.SessionRegistry sessionRegistry() {
         return new org.springframework.security.core.session.SessionRegistryImpl();
     }
@@ -103,7 +125,8 @@ public class SecurityConfig {
                         .password(user.getPasswordHash())
                         .roles("USER")
                         .build())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: "+username));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "User not found: "+username));
     }
 
     @Bean
