@@ -33,7 +33,6 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     public void registerUser(String username, String masterPassword) throws Exception {
-        log.info("Registration attempt for username: {}", username);
 
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username is already used");
@@ -42,7 +41,8 @@ public class UserService {
         List<String> errors = validationService.validateMasterPassword(masterPassword);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Master password requirements: " + String.join(", ", errors));
+                    "Master password requirements: " +
+                            String.join(", ", errors));
         }
 
         String hashedPassword = passwordEncoder.encode(masterPassword);
@@ -53,7 +53,8 @@ public class UserService {
 
         byte[] combined = new byte[salt.length + aesKey.getEncoded().length];
         System.arraycopy(salt, 0, combined, 0, salt.length);
-        System.arraycopy(aesKey.getEncoded(), 0, combined, salt.length, aesKey.getEncoded().length);
+        System.arraycopy(aesKey.getEncoded(), 0, combined, salt.length,
+                aesKey.getEncoded().length);
         String encryptionKey = Base64.getEncoder().encodeToString(combined);
 
         User user = new User();
@@ -83,8 +84,11 @@ public class UserService {
         }
 
         if (currentPassword.equals(newPassword)) {
-            log.warn("Password change failed - new password same as current for user: {}", user.getUsername());
-            throw new IllegalArgumentException("New password must be different from current password");
+            log.warn(
+                    "Password change failed - new password same as current for user: {}",
+                    user.getUsername());
+            throw new IllegalArgumentException(
+                    "New password must be different from current password");
         }
 
         List<String> validationErrors = validationService.validateMasterPassword(newPassword);
@@ -108,7 +112,8 @@ public class UserService {
                         currentAesKey
                 );
 
-                String reencryptedPassword = encryptionService.encrypt(decryptedPassword, newAesKey);
+                String reencryptedPassword = encryptionService.encrypt(decryptedPassword,
+                        newAesKey);
 
                 credential.setEncryptedPassword(reencryptedPassword);
                 credentialRepository.save(credential);
@@ -123,21 +128,24 @@ public class UserService {
             }
         }
 
-        log.info("Re-encrypted {} credentials for user: {}", reencryptedCount, user.getUsername());
+        log.info("Re-encrypted {} credentials for user: {}", reencryptedCount,
+                user.getUsername());
 
         String newPasswordHash = passwordEncoder.encode(newPassword);
 
         byte[] newAesKeyBytes = newAesKey.getEncoded();
         byte[] combined = new byte[newSalt.length + newAesKeyBytes.length];
         System.arraycopy(newSalt, 0, combined, 0, newSalt.length);
-        System.arraycopy(newAesKeyBytes, 0, combined, newSalt.length, newAesKeyBytes.length);
+        System.arraycopy(newAesKeyBytes, 0, combined, newSalt.length,
+                newAesKeyBytes.length);
         String encodedKey = Base64.getEncoder().encodeToString(combined);
 
         user.setPasswordHash(newPasswordHash);
         user.setEncryptionKey(encodedKey);
         userRepository.save(user);
 
-        log.info("Master password changed successfully for user: {}", user.getUsername());
+        log.info("Master password changed successfully for user: {}",
+                user.getUsername());
     }
 
     @Transactional
@@ -179,7 +187,8 @@ public class UserService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(user.getBackupCodes(),
-                    mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+                    mapper.getTypeFactory().constructCollectionType(
+                            List.class, String.class));
         } catch (Exception e) {
             log.error("Error reading backup codes", e);
             return new ArrayList<>();
@@ -201,7 +210,8 @@ public class UserService {
     public boolean verifyPassword(User user, String password) {
         log.debug("Verifying password for user: {}", user.getUsername());
         boolean isValid = passwordEncoder.matches(password, user.getPasswordHash());
-        log.debug("Password verification result for user {}: {}", user.getUsername(), isValid);
+        log.debug("Password verification result for user {}: {}",
+                user.getUsername(), isValid);
         return isValid;
     }
 }
