@@ -7,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -51,7 +50,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NotBlank HttpServletRequest request,
+            @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
@@ -91,7 +90,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         } else {
             // Request blocked
             long waitSeconds = rateLimitService.getSecondsUntilReset(
-                    isStrict ? "strict:" + ip : ip
+                    ip, isStrict
             );
 
             log.warn("Rate limit exceeded - IP: {}, URI: {}, Wait: {}s", ip, uri, waitSeconds);

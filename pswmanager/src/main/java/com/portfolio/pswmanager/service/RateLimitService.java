@@ -48,8 +48,10 @@ public class RateLimitService {
         return Math.max(0, maxRequests - currentCount);
     }
 
-    public long getSecondsUntilReset(String key) {
-        CopyOnWriteArrayList<Long> timestamps = requestTimestamps.get(key);
+    public long getSecondsUntilReset(String key, boolean strict) {
+        String effectiveKey = strict ? "strict:" + key : key;
+
+        CopyOnWriteArrayList<Long> timestamps = requestTimestamps.get(effectiveKey);
 
         if (timestamps == null || timestamps.isEmpty()) {
             return 0;

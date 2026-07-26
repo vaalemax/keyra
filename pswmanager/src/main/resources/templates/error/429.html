@@ -46,7 +46,7 @@
 
 <div th:replace="~{fragments :: footer}"></div>
 
-<script th:if="${retryAfter}">
+<script th:if="${retryAfter}" th:inline="javascript">
     let secondsLeft = /*[[${retryAfter}]]*/ 60;
     const countdownEl = document.getElementById('countdown');
 
@@ -57,7 +57,6 @@
             clearInterval(timer);
             countdownEl.innerHTML = '<span style="color: var(--success);">✓ Ready</span>';
 
-            // Auto-reload after 1 second
             setTimeout(() => {
                 location.reload();
             }, 1000);
