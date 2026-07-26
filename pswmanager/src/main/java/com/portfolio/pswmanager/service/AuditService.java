@@ -28,133 +28,26 @@ public class AuditService {
 
     private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
-    @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logAction(
-            User user,
-            AuditLog.AuditAction action,
-            AuditLog.AuditStatus status,
-            String details,
-            String ipAddress,
-            String userAgent
-    ) {
-        try {
-            AuditLog auditLog = new AuditLog();
-            auditLog.setUser(user);
-            auditLog.setAction(action);
-            auditLog.setStatus(status);
-            auditLog.setDetails(details);
-            auditLog.setIpAddress(ipAddress);
-            auditLog.setUserAgent(userAgent);
-
-            auditLogRepository.save(auditLog);
-
-            log.debug("Audit log created - user: {}, action: {}, status: {}",
-                    user != null ? user.getUsername() : "SYSTEM",
-                    action,
-                    status);
-
-        } catch (Exception e) {
-            log.error("Failed to create audit log - action: {}, user: {}",
-                    action,
-                    user != null ? user.getUsername() : "SYSTEM",
-                    e);
-        }
-    }
-
-    @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logActionWithEntity(
-            User user,
-            AuditLog.AuditAction action,
-            AuditLog.AuditStatus status,
-            String entityType,
-            Long entityId,
-            String details,
-            String ipAddress,
-            String userAgent
-    ) {
-        try {
-            AuditLog auditLog = new AuditLog();
-            auditLog.setUser(user);
-            auditLog.setAction(action);
-            auditLog.setStatus(status);
-            auditLog.setEntityType(entityType);
-            auditLog.setEntityId(entityId);
-            auditLog.setDetails(details);
-            auditLog.setIpAddress(ipAddress);
-            auditLog.setUserAgent(userAgent);
-
-            auditLogRepository.save(auditLog);
-
-            log.debug("Audit log created - user: {}, action: {}, entity: {} (ID: {})",
-                    user != null ? user.getUsername() : "SYSTEM",
-                    action,
-                    entityType,
-                    entityId);
-
-        } catch (Exception e) {
-            log.error("Failed to create audit log with entity - action: {}, user: {}",
-                    action,
-                    user != null ? user.getUsername() : "SYSTEM",
-                    e);
-        }
-    }
-
-    @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logFailedLogin(
-            String username,
-            String details,
-            String ipAddress,
-            String userAgent
-    ) {
-        try {
-            AuditLog auditLog = new AuditLog();
-            auditLog.setUser(null);
-            auditLog.setAction(AuditLog.AuditAction.LOGIN_FAILURE);
-            auditLog.setStatus(AuditLog.AuditStatus.FAILURE);
-            auditLog.setDetails("Username: " + username + " - " + details);
-            auditLog.setIpAddress(ipAddress);
-            auditLog.setUserAgent(userAgent);
-
-            auditLogRepository.save(auditLog);
-
-            log.warn("Failed login attempt logged - username: {}, IP: {}", username, ipAddress);
-
-        } catch (Exception e) {
-            log.error("Failed to log failed login attempt for username: {}", username, e);
-        }
-    }
-
     @Transactional(readOnly = true)
     public Page<AuditLog> getUserAuditLogs(Long userId, Pageable pageable) {
         return auditLogRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
     }
 
-    // extracts IP address from HTTP request
     public String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
             ip = request.getRemoteAddr();
-        }
-        // If multiple IPs (proxy chain), take the first one
-        if (ip != null && ip.contains(",")) {
+        if (ip != null && ip.contains(","))
             ip = ip.split(",")[0].trim();
-        }
         return ip;
     }
 
-    // extracts User-Agent from HTTP request
     public String getUserAgent(HttpServletRequest request) {
         String userAgent = request.getHeader("User-Agent");
-        // Truncate if too long
-        if (userAgent != null && userAgent.length() > 500) {
+        if (userAgent != null && userAgent.length() > 500)
             userAgent = userAgent.substring(0, 500);
-        }
         return userAgent;
     }
 
@@ -212,5 +105,78 @@ public class AuditService {
                 clientIp,
                 userAgent
         );
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAction(
+            User user,
+            AuditLog.AuditAction action,
+            AuditLog.AuditStatus status,
+            String details,
+            String ipAddress,
+            String userAgent
+    ) {
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setUser(user);
+            auditLog.setAction(action);
+            auditLog.setStatus(status);
+            auditLog.setDetails(details);
+            auditLog.setIpAddress(ipAddress);
+            auditLog.setUserAgent(userAgent);
+
+            auditLogRepository.save(auditLog);
+
+            log.debug("Audit log created - user: {}, action: {}, status: {}",
+                    user != null ? user.getUsername() : "SYSTEM",
+                    action,
+                    status);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log - action: {}, user: {}",
+                    action,
+                    user != null ? user.getUsername() : "SYSTEM",
+                    e);
+        }
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void logActionWithEntity(
+            User user,
+            AuditLog.AuditAction action,
+            AuditLog.AuditStatus status,
+            String entityType,
+            Long entityId,
+            String details,
+            String ipAddress,
+            String userAgent
+    ) {
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setUser(user);
+            auditLog.setAction(action);
+            auditLog.setStatus(status);
+            auditLog.setEntityType(entityType);
+            auditLog.setEntityId(entityId);
+            auditLog.setDetails(details);
+            auditLog.setIpAddress(ipAddress);
+            auditLog.setUserAgent(userAgent);
+
+            auditLogRepository.save(auditLog);
+
+            log.debug("Audit log created - user: {}, action: {}, entity: {} (ID: {})",
+                    user != null ? user.getUsername() : "SYSTEM",
+                    action,
+                    entityType,
+                    entityId);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log with entity - action: {}, user: {}",
+                    action,
+                    user != null ? user.getUsername() : "SYSTEM",
+                    e);
+        }
     }
 }

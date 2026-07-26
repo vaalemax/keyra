@@ -1,5 +1,6 @@
 package com.portfolio.pswmanager.config;
 
+import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.service.AuditService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,10 +41,11 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         log.warn("Failed login attempt for username: {} - Reason: {}", username, errorMessage);
 
-        // Audit log failed login
-        auditService.logFailedLogin(
-                username,
-                "Failed login: " + errorMessage,
+        auditService.logAction(
+                null,
+                AuditLog.AuditAction.LOGIN_FAILURE,
+                AuditLog.AuditStatus.FAILURE,
+                "Username: " + username + " - " + "Failed login: " + errorMessage,
                 auditService.getClientIp(request),
                 auditService.getUserAgent(request)
         );

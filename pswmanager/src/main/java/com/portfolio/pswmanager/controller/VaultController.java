@@ -113,11 +113,10 @@ public class VaultController {
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Invalid data");
 
-            auditService.auditVaultFailure(
-                    AuditLog.AuditAction.CREDENTIAL_CREATE,
-                    "CREDENTIAL",
+            auditService.logAction(
                     user,
-                    null,
+                    AuditLog.AuditAction.CREDENTIAL_CREATE,
+                    AuditLog.AuditStatus.FAILURE,
                     "Validation error: " +errorMessage,
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
@@ -156,11 +155,10 @@ public class VaultController {
 
         } catch (Exception e) {
 
-            auditService.auditVaultFailure(
-                    AuditLog.AuditAction.CREDENTIAL_UPDATE,
-                    "CREDENTIAL",
+            auditService.logAction(
                     user,
-                    null,
+                    AuditLog.AuditAction.CREDENTIAL_CREATE,
+                    AuditLog.AuditStatus.FAILURE,
                     "Error: " +e.getMessage(),
                     auditService.getClientIp(request),
                     auditService.getUserAgent(request)
