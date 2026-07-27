@@ -17,9 +17,9 @@ import java.io.IOException;
 @Component
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationFailureHandler.class);
-
     private final AuditService auditService;
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationFailureHandler.class);
 
     public CustomAuthenticationFailureHandler(AuditService auditService) {
         super("/login?error=true");

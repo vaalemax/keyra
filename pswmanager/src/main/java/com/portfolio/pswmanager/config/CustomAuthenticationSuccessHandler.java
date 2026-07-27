@@ -72,7 +72,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                     AuditLog.AuditAction.LOGIN_SUCCESS,
                     AuditLog.AuditStatus.SUCCESS,
                     "Login successful",
-                    getClientIp(request),
+                    auditService.getClientIp(request),
                     request.getHeader("User-Agent")
             );
 
@@ -86,25 +86,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                     AuditLog.AuditAction.SYSTEM_ERROR,
                     AuditLog.AuditStatus.FAILURE,
                     "Login error: " + e.getMessage(),
-                    getClientIp(request),
+                    auditService.getClientIp(request),
                     request.getHeader("User-Agent")
             );
 
             response.sendRedirect("/login?error=true");
         }
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
     }
 }
