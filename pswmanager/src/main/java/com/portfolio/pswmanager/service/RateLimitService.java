@@ -2,6 +2,7 @@ package com.portfolio.pswmanager.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -11,25 +12,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service
 public class RateLimitService {
 
-    private final Map<String, CopyOnWriteArrayList<Long>> requestTimestamps = new ConcurrentHashMap<>();
+    private final Map<String, CopyOnWriteArrayList<Long>> requestTimestamps =
+            new ConcurrentHashMap<>();
 
-    private static final int NORMAL_LIMIT = 10;  // requests per minute
-    private static final int STRICT_LIMIT = 5;   // requests per minute
-    private static final long WINDOW_MS = 60_000; // 1 minute
+    @Value("${rate-limit.normal.capacity:10}")
+    private int normalLimit;
+
+    @Value("${rate-limit.strict.capacity:5}")
+    private int strictLimit;
+
+    @Value("${rate-limit.window.ms:60_000}")
+    private long WINDOW_MS;
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitService.class);
 
     public boolean isAllowed(String key) {
-        return checkRateLimit(key, NORMAL_LIMIT);
+        return checkRateLimit(key, normalLimit);
     }
 
     public boolean isStrictAllowed(String key) {
         String strictKey = "strict:" + key;
-        return checkRateLimit(strictKey, STRICT_LIMIT);
+        return checkRateLimit(strictKey, strictLimit);
     }
 
     public int getRemainingRequests(String key, boolean strict) {
-        int maxRequests = strict ? STRICT_LIMIT : NORMAL_LIMIT;
+        int maxRequests = strict ? strictLimit : normalLimit;
         String effectiveKey = strict ? "strict:" + key : key;
 
         long now = System.currentTimeMillis();
