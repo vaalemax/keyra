@@ -23,7 +23,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
             "AND a.timestamp >= :since")
     List<AuditLog> findFailedLoginAttempts(@Param("username") String username, @Param("since") LocalDateTime since);
 
-    void deleteByTimestampBefore(LocalDateTime cutoffDate);
+    long deleteByTimestampBefore(LocalDateTime cutoffDate);
 
     List<AuditLog> findByUserIdAndTimestampAfter(Long userId, LocalDateTime timestamp);
 }
