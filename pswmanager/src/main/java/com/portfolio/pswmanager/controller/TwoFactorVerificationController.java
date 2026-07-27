@@ -1,6 +1,6 @@
 package com.portfolio.pswmanager.controller;
 
-import com.portfolio.pswmanager.model.TwoFactorVerificationResult;
+import com.portfolio.pswmanager.model.dto.TwoFactorVerificationResultDTO;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.TwoFactorService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -60,7 +60,7 @@ public class TwoFactorVerificationController {
             return "redirect:/login";
         }
 
-        TwoFactorVerificationResult result = twoFactorService.verify(
+        TwoFactorVerificationResultDTO result = twoFactorService.verify(
                 userId, code, useBackupCode,
                 auditService.getClientIp(request), auditService.getUserAgent(request)
         );

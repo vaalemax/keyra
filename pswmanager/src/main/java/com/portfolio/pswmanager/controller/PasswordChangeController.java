@@ -3,7 +3,7 @@ package com.portfolio.pswmanager.controller;
 import com.portfolio.pswmanager.model.AuditLog;
 import com.portfolio.pswmanager.model.Credential;
 import com.portfolio.pswmanager.model.User;
-import com.portfolio.pswmanager.model.dto.PasswordChangeRequest;
+import com.portfolio.pswmanager.model.dto.PasswordChangeRequestDTO;
 import com.portfolio.pswmanager.repository.CredentialRepository;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.SessionService;
@@ -50,13 +50,13 @@ public class PasswordChangeController {
 
     @GetMapping("/settings/password")
     public String showPasswordChangePage(Model model) {
-        model.addAttribute("passwordChangeRequest", new PasswordChangeRequest());
+        model.addAttribute("passwordChangeRequest", new PasswordChangeRequestDTO());
         return "password-change";
     }
 
     @PostMapping("/settings/password")
     public String changePassword(
-            @Valid @ModelAttribute PasswordChangeRequest request,
+            @Valid @ModelAttribute PasswordChangeRequestDTO request,
             BindingResult bindingResult,
             Authentication authentication,
             HttpSession session,

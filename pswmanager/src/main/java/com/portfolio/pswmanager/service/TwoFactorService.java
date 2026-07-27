@@ -6,7 +6,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.portfolio.pswmanager.model.AuditLog;
-import com.portfolio.pswmanager.model.TwoFactorVerificationResult;
+import com.portfolio.pswmanager.model.dto.TwoFactorVerificationResultDTO;
 import com.portfolio.pswmanager.model.User;
 import com.portfolio.pswmanager.repository.UserRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
@@ -92,11 +92,11 @@ public class TwoFactorService {
         return googleAuthenticator.authorize(secret, code);
     }
 
-    public TwoFactorVerificationResult verify(Long userId,
-                                              String code,
-                                              boolean useBackupCode,
-                                              String clientIp,
-                                              String userAgent) {
+    public TwoFactorVerificationResultDTO verify(Long userId,
+                                                 String code,
+                                                 boolean useBackupCode,
+                                                 String clientIp,
+                                                 String userAgent) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException(
@@ -130,7 +130,7 @@ public class TwoFactorService {
         } catch (NumberFormatException e) {
             log.warn("2FA verification failed - invalid code format for user: {}",
                     user.getUsername());
-            return TwoFactorVerificationResult.invalidFormat();
+            return TwoFactorVerificationResultDTO.invalidFormat();
         }
 
         if (!isValid) {
@@ -145,7 +145,7 @@ public class TwoFactorService {
                     clientIp,
                     userAgent
             );
-            return TwoFactorVerificationResult.invalidCode();
+            return TwoFactorVerificationResultDTO.invalidCode();
         }
 
         try {
@@ -163,7 +163,7 @@ public class TwoFactorService {
                     userAgent
             );
 
-            return TwoFactorVerificationResult.success(aesKey, warningMessage);
+            return TwoFactorVerificationResultDTO.success(aesKey, warningMessage);
 
         } catch (Exception e) {
             log.error("Error deriving AES key after 2FA for user: {}",
@@ -177,7 +177,7 @@ public class TwoFactorService {
                     clientIp,
                     userAgent
             );
-            return TwoFactorVerificationResult.error(
+            return TwoFactorVerificationResultDTO.error(
                     "An error occurred. Please try again.");
         }
     }

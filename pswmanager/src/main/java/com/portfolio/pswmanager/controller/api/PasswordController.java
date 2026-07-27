@@ -1,8 +1,8 @@
 package com.portfolio.pswmanager.controller.api;
 
 import com.portfolio.pswmanager.model.dto.ErrorResponse;
-import com.portfolio.pswmanager.model.dto.PasswordGenerationRequest;
-import com.portfolio.pswmanager.model.dto.PasswordGenerationResponse;
+import com.portfolio.pswmanager.model.dto.PasswordGenerationRequestDTO;
+import com.portfolio.pswmanager.model.dto.PasswordGenerationResponseDTO;
 import com.portfolio.pswmanager.service.PasswordGeneratorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class PasswordController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<?> generatePassword(@RequestBody PasswordGenerationRequest request) {
+    public ResponseEntity<?> generatePassword(@RequestBody PasswordGenerationRequestDTO request) {
         try {
             String password = passwordGeneratorService.generatePassword(
                     request.getLength(),
@@ -32,7 +32,7 @@ public class PasswordController {
                     request.isUseSymbols(),
                     request.isNoAmbiguous()
             );
-            return ResponseEntity.ok(new PasswordGenerationResponse(password, password.length()));
+            return ResponseEntity.ok(new PasswordGenerationResponseDTO(password, password.length()));
         } catch (IllegalArgumentException e) {
             log.warn("Password generation failed - validation error: {}", e.getMessage());
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));

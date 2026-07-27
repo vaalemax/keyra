@@ -1,7 +1,7 @@
 package com.portfolio.pswmanager.controller;
 
 import com.portfolio.pswmanager.model.AuditLog;
-import com.portfolio.pswmanager.model.dto.RegisterRequest;
+import com.portfolio.pswmanager.model.dto.RegisterRequestDTO;
 import com.portfolio.pswmanager.service.AuditService;
 import com.portfolio.pswmanager.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(
-            @Valid @ModelAttribute RegisterRequest request,
+            @Valid @ModelAttribute RegisterRequestDTO request,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             HttpServletRequest httpRequest

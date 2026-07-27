@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class PasswordGenerationRequest {
+public class PasswordGenerationRequestDTO {
     @Min(value = 8, message = "Length must be at least 8")
     @Max(value = 128, message = "Length must not exceed 128")
     private int length = 16;

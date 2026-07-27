@@ -1,8 +1,8 @@
-package com.portfolio.pswmanager.model;
+package com.portfolio.pswmanager.model.dto;
 
 import javax.crypto.SecretKey;
 
-public class TwoFactorVerificationResult {
+public class TwoFactorVerificationResultDTO {
     public enum Status { SUCCESS, INVALID_CODE, INVALID_FORMAT, ERROR }
 
     private final Status status;
@@ -10,32 +10,32 @@ public class TwoFactorVerificationResult {
     private final String warningMessage;
     private final String errorMessage;
 
-    private TwoFactorVerificationResult(Status status, SecretKey aesKey,
-                                        String warningMessage, String errorMessage) {
+    private TwoFactorVerificationResultDTO(Status status, SecretKey aesKey,
+                                           String warningMessage, String errorMessage) {
         this.status = status;
         this.aesKey = aesKey;
         this.warningMessage = warningMessage;
         this.errorMessage = errorMessage;
     }
 
-    public static TwoFactorVerificationResult success(
+    public static TwoFactorVerificationResultDTO success(
             SecretKey aesKey, String warningMessage) {
-        return new TwoFactorVerificationResult(Status.SUCCESS,
+        return new TwoFactorVerificationResultDTO(Status.SUCCESS,
                 aesKey, warningMessage, null);
     }
 
-    public static TwoFactorVerificationResult invalidCode() {
-        return new TwoFactorVerificationResult(Status.INVALID_CODE,
+    public static TwoFactorVerificationResultDTO invalidCode() {
+        return new TwoFactorVerificationResultDTO(Status.INVALID_CODE,
                 null, null, null);
     }
 
-    public static TwoFactorVerificationResult invalidFormat() {
-        return new TwoFactorVerificationResult(Status.INVALID_FORMAT,
+    public static TwoFactorVerificationResultDTO invalidFormat() {
+        return new TwoFactorVerificationResultDTO(Status.INVALID_FORMAT,
                 null, null, null);
     }
 
-    public static TwoFactorVerificationResult error(String errorMessage) {
-        return new TwoFactorVerificationResult(Status.ERROR,
+    public static TwoFactorVerificationResultDTO error(String errorMessage) {
+        return new TwoFactorVerificationResultDTO(Status.ERROR,
                 null, null, errorMessage);
     }
 
