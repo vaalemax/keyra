@@ -21,7 +21,7 @@ public class RateLimitService {
     @Value("${rate-limit.strict.capacity:5}")
     private int strictLimit;
 
-    @Value("${rate-limit.window.ms:60_000}")
+    @Value("${rate-limit.window.ms:60000}")
     private long WINDOW_MS;
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitService.class);
