@@ -124,9 +124,8 @@ git clone https://github.com/vaalemax/keyra.git
 cd keyra
 
 cp .env.example .env
-# edit .env with your local database credentials
 
-mvn spring-boot:run
+docker compose up --build
 ```
 
 The app will be available at `http://localhost:8080`.

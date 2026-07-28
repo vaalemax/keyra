@@ -1,8 +1,10 @@
 target/
-.idea/
-.mvn/
-*.iml
-*.log
 .git/
-.gitignore
+.idea/
+*.iml
+logs/
+.env
+.env.example
+Dockerfile
+docker-compose.yml
 README.md
