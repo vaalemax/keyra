@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setup 2FA – VaultShield</title>
+  <title>Setup 2FA – Keyra</title>
   <style th:replace="~{fragments :: styles}"></style>
   <link rel="stylesheet" th:href="@{/css/login/two-factor-setup.css}">
 
@@ -134,7 +134,7 @@
 
     const codesText = backupCodesData.join('\n');
 
-    const content = `VaultShield - Backup Codes for ${usernameData}
+    const content = `Keyra - Backup Codes for ${usernameData}
       Generated: ${new Date().toLocaleString()}
 
       IMPORTANT: Save these codes in a safe place.
@@ -149,7 +149,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `vaultshield-backup-codes-${usernameData}.txt`;
+    a.download = `keyra-backup-codes-${usernameData}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

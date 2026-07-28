@@ -329,7 +329,7 @@ public class VaultController {
 
             String timestamp = LocalDateTime.now().format(
                     DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            String filename = "vaultshield_backup_" + timestamp + ".encrypted";
+            String filename = "keyra_backup_" + timestamp + ".encrypted";
 
             log.info("Vault exported successfully - {} credentials", credentials.size());
 

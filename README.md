@@ -1,4 +1,4 @@
-# 🛡️ VaultShield — Secure Password Manager
+# 🛡️ Keyra — Secure Password Manager
 
 A full-stack password manager built from the ground up to explore how production-grade
 Java applications are actually structured - clean layering, defensive security design,
@@ -120,8 +120,8 @@ project instantly to a non-technical reviewer)*
 ## 🚀 Running Locally
 
 ```bash
-git clone https://github.com/vaalemax/vaultshield.git
-cd vaultshield
+git clone https://github.com/vaalemax/keyra.git
+cd keyra
 
 cp .env.example .env
 # edit .env with your local database credentials

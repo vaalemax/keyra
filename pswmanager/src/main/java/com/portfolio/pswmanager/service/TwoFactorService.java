@@ -56,7 +56,7 @@ public class TwoFactorService {
     }
 
     public String generateQrCodeUrl(String username, String secret) {
-        String issuer = "VaultShield";
+        String issuer = "Keyra";
         return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
                 issuer, username,
                 new GoogleAuthenticatorKey.Builder(secret).build());
