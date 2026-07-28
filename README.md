@@ -1,7 +1,7 @@
 # 🛡️ VaultShield — Secure Password Manager
 
 A full-stack password manager built from the ground up to explore how production-grade
-Java applications are actually structured — clean layering, defensive security design,
+Java applications are actually structured - clean layering, defensive security design,
 and the kind of decisions that matter once real users (and real attackers) are involved.
 
 This is a personal portfolio project, not a toy CRUD app: every credential is encrypted
