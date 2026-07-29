@@ -123,6 +123,8 @@ This project treats security as a design constraint, not an afterthought:
 
 ## 🚀 Running Locally
 
+### With Docker (recommended)
+
 ```bash
 git clone https://github.com/vaalemax/keyra.git
 cd keyra
@@ -134,7 +136,19 @@ docker compose up --build
 
 The app will be available at `http://localhost:8080`.
 
-**Requirements:** Java 21, Maven, PostgreSQL.
+**Requirements:** Docker and Docker Compose.
+
+### Without Docker
+
+```bash
+git clone https://github.com/vaalemax/keyra.git
+cd keyra
+
+cp .env.example .env
+# edit .env to point DB_URL/DB_USERNAME/DB_PASSWORD at your local PostgreSQL instance
+
+mvn spring-boot:run
+```
 
 ---
 
