@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Access Denied</title>
+    <style th:replace="~{fragments :: styles}"></style>
+    <style>
+        .error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: var(--bg-base); }
+        .error-code { font-size: 8rem; font-weight: 900; color: var(--error); line-height: 1; margin-bottom: 20px; }
+        .error-title { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+        .error-message { font-size: 1rem; color: var(--text-muted); max-width: 500px; margin-bottom: 32px; line-height: 1.6; }
+        .error-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .error-icon { font-size: 4rem; margin-bottom: 20px; }
+    </style>
+</head>
+
+<body>
+<div class="error-page">
+    <div class="error-icon">🚫</div>
+    <div class="error-code">403</div>
+    <h1 class="error-title">Access Denied</h1>
+    <p class="error-message">
+        You don't have enough permissions to access this resource.
+        <br>
+        Try to log in or contact an admin.
+    </p>
+
+    <div class="error-actions">
+        <a th:href="@{/login}" class="btn btn-primary">
+            🔐 Go to Login
+        </a>
+        <a th:href="@{/vault}" class="btn btn-secondary">
+            🏠 Go back to Vault
+        </a>
+    </div>
+</div>
+</body>
+</html>

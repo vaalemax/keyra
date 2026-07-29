@@ -1,0 +1,308 @@
+.credential-card {
+    display: flex;
+    flex-direction: column;
+    height: 295px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.credential-card:hover {
+    transform: translateY(-2px);
+}
+
+.credential-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.credential-card__service-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-glow);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.credential-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.credential-card__title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 2px 0;
+}
+
+.credential-card__category {
+    font-size: .75rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.credential-card__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.credential-card__btn-group {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.credential-card__value {
+    flex: 1;
+    font-size: .88rem;
+    color: var(--text-primary);
+    min-width: 0;
+}
+
+.credential-card__row--password {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.credential-card__row--password label {
+    font-size: .72rem;
+    color: var(--text-muted);
+    width: 75px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+}
+
+.credential-card__value--password {
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 0;
+}
+
+.credential-card__value--password.password-hidden {
+    letter-spacing: 3px;
+    overflow: hidden;
+}
+
+.credential-card__value--password::-webkit-scrollbar {
+    height: 3px;
+}
+
+.credential-card__value--password::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.credential-card__value--password::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.credential-card__value--password::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+.credential-card__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    padding: 4px 6px;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.credential-card__btn:hover {
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.credential-card__btn:active {
+    transform: scale(0.95);
+}
+
+.credential-card__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.credential-card__actions-left {
+    display: flex;
+    gap: 6px;
+}
+
+.credential-card__actions-right {
+    display: flex;
+    gap: 6px;
+}
+
+.credential-card__actions .btn-sm {
+    padding: 7px 14px;
+    font-size: .8rem;
+    border-radius: var(--radius-sm);
+}
+
+.credential-card__value--password {
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    letter-spacing: 0.02em;
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    flex-shrink: 0;
+}
+
+.credential-card__value--password.password-hidden {
+    letter-spacing: 3px;
+    overflow: hidden;
+}
+
+.credential-card__notes-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-radius: 12px;
+    font-size: .7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.credential-card__notes-badge:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.notes-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.notes-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.notes-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    width: 90%;
+    max-width: 500px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.notes-modal-overlay.active .notes-modal {
+    transform: scale(1);
+}
+
+.notes-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+}
+
+.notes-modal__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.notes-modal__close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.notes-modal__close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.notes-modal__body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.notes-modal__content {
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.notes-modal__body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notes-modal__body::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}

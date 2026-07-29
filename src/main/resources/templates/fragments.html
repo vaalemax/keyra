@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragments</title>
+    <th:block th:fragment="styles">
+        <link rel="stylesheet" th:href="@{/css/components/alerts.css}">
+        <link rel="stylesheet" th:href="@{/css/components/cards.css}">
+        <link rel="stylesheet" th:href="@{/css/components/footer.css}">
+        <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+        <link rel="stylesheet" th:href="@{/css/components/generator.css}">
+        <link rel="stylesheet" th:href="@{/css/components/navbar.css}">
+        <link rel="stylesheet" th:href="@{/css/main.css}">
+        <link rel="stylesheet" th:href="@{/css/vault.css}">
+    </th:block>
+</head>
+
+<nav th:fragment="navbar" class="navbar">
+
+    <a th:href="@{/vault}" class="navbar__logo">
+        <div class="navbar__logo-icon">🔐</div>
+        <span class="navbar__logo-text">Key<span>ra</span></span>
+    </a>
+
+    <ul class="navbar__menu" sec:authorize="isAuthenticated()">
+        <li><a th:href="@{/vault}">Vault</a></li>
+        <li><a th:href="@{/activity}">Activity</a></li>
+        <li><a th:href="@{/settings/password}">Settings</a></li>
+        <li><a th:href="@{/settings/2fa}">2FA</a></li>
+    </ul>
+
+    <div class="navbar__actions">
+        <button class="theme-toggle"
+                id="themeToggle"
+                onclick="toggleTheme()"
+                aria-label="Toggle dark/light mode"
+                title="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
+        <span sec:authorize="isAuthenticated()" class="navbar__user"
+              th:text="${#authentication.principal.username}">username</span>
+
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="margin:0">
+            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+        </form>
+
+        <a sec:authorize="not(isAuthenticated())" th:href="@{/login}" class="btn btn-primary btn-sm">Login</a>
+    </div>
+
+    <button class="navbar__hamburger" aria-label="Menu">☰</button>
+</nav>
+
+<footer th:fragment="footer" class="footer">
+
+    <p>&copy; <span th:text="${T(java.time.Year).now().getValue()}">2026</span> Keyra. All the data is encrypted on the client side.</p>
+    <nav class="footer__links">
+        <a href="https://github.com/vaalemax">GitHub</a>
+    </nav>
+</footer>
+
+<div th:fragment="messages">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span class="alert-icon">✔</span>
+        <span th:text="${successMessage}">Operation completed.</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <span class="alert-icon">✕</span>
+        <span th:text="${errorMessage}">An error occurred.</span>
+    </div>
+    <div th:if="${warningMessage}" class="alert alert-warning">
+        <span class="alert-icon">⚠</span>
+        <span th:text="${warningMessage}">Warning.</span>
+    </div>
+</div>
+
+<div th:fragment="credentialCard(credential)" class="card credential-card">
+
+    <div class="card-header">
+        <div class="credential-card__service-icon">
+            <span th:text="${credential.serviceName.substring(0,1).toUpperCase()}">S</span>
+        </div>
+        <div class="credential-card__info">
+            <h3 class="credential-card__title" th:text="${credential.serviceName}">Service Name</h3>
+            <span class="credential-card__category" th:text="${credential.category}">other</span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="credential-card__row">
+            <label>Username</label>
+            <div class="credential-card__value credential-card__value--username"
+                 th:text="${credential.username}"
+                 th:title="${credential.username}">
+                username@example.com
+            </div>
+        </div>
+
+        <div class="credential-card__row">
+            <label>Password</label>
+            <div class="credential-card__value credential-card__value--password password-hidden">
+                ••••••••
+            </div>
+            <div class="credential-card__btn-group">
+                <button class="credential-card__btn"
+                        type="button"
+                        th:attr="data-password=${credential.decryptedPassword}"
+                        onclick="togglePasswordVisibilityCard(this)"
+                        title="Show/hide password">
+                    👁
+                </button>
+                <button class="credential-card__btn"
+                        type="button"
+                        th:attr="data-password=${credential.decryptedPassword}"
+                        onclick="copyPasswordCard(this)"
+                        title="Copy password">
+                    📋
+                </button>
+            </div>
+        </div>
+
+        <div class="credential-card__row">
+            <label>Created</label>
+            <div class="credential-card__value credential-card__value--date"
+                 th:text="${#temporals.format(credential.createdAt, 'dd MMM yyyy')}">
+                05 Mar 2025
+            </div>
+        </div>
+    </div>
+    <div class="credential-card__actions">
+        <div class="credential-card__actions-left">
+            <span th:if="${credential.notes != null and !credential.notes.isEmpty()}"
+                  class="credential-card__notes-badge"
+                  th:attr="data-notes=${credential.notes}, data-service=${credential.serviceName}"
+                  onclick="openNotesModal(this)"
+                  title="View notes">
+                📝 Notes
+            </span>
+        </div>
+
+        <div class="credential-card__actions-right">
+            <button class="btn btn-sm btn-secondary"
+                    th:attr="data-cred-id=${credential.id},
+                             data-cred-service=${credential.serviceName},
+                             data-cred-username=${credential.username},
+                             data-cred-url=${credential.url},
+                             data-cred-category=${credential.category},
+                             data-cred-notes=${credential.notes}"
+                    onclick="openEditModalFromCard(this)">
+                ✏ Edit
+            </button>
+            <form th:action="@{/vault/delete/{id}(id=${credential.id})}"
+                  method="post"
+                  style="margin:0; display:inline;"
+                  onsubmit="return confirm('⚠️ Delete this credential permanently?')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    🗑
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="passwordGenerator" class="modal-overlay" id="passwordGeneratorModal">
+
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="genModalTitle">
+        <div class="modal-header">
+            <h3 id="genModalTitle">🎲 Generate Password</h3>
+            <button type="button" class="modal-close" onclick="closeModal('passwordGeneratorModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <div class="generator__length-row">
+                <label for="pwdLength">Lungh.</label>
+                <input type="range" id="pwdLength" min="8" max="64" value="16"
+                       oninput="document.getElementById('pwdLengthVal').textContent = this.value">
+                <span class="length-value" id="pwdLengthVal">16</span>
+            </div>
+
+            <div class="generator__options">
+                <label class="generator__option">
+                    <input type="checkbox" id="useUppercase" checked> Upper case
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useLowercase" checked> Lower case
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useNumbers" checked> Numbers
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="useSymbols"> Symbols
+                </label>
+                <label class="generator__option">
+                    <input type="checkbox" id="noAmbiguous" checked> Without ambiguous characters
+                </label>
+            </div>
+
+            <div class="generator__result">
+                <span class="generated-password" id="generatedPassword">— press Generate —</span>
+            </div>
+
+            <div th:replace="~{fragments :: strengthMeter('generated')}"></div>
+
+            <div class="generator__actions mt-2">
+                <button type="button" class="btn btn-secondary" onclick="generatePassword()">🎲 Generate</button>
+                <button type="button" class="btn btn-primary"   onclick="copyGeneratedPassword()">📋 Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="strengthMeter(contextId)">
+    <div class="strength-bar-container" th:id="'strengthBar-' + ${contextId}">
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+        <div class="strength-segment"></div>
+    </div>
+    <div class="strength-label" th:id="'strengthLabel-' + ${contextId}">—</div>
+</div>
+
+<th:block th:fragment="scripts">
+
+    <script th:src="@{/js/components/modals.js}"></script>
+    <script th:src="@{/js/components/theme-toggle.js}"></script>
+    <script th:src="@{/js/components/password-generator.js}"></script>
+    <script th:src="@{/js/components/credential-card.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+</th:block>
+
+</body>
+</html>

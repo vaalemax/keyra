@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Too Many Requests – Keyra</title>
+    <style th:replace="~{fragments :: styles}"></style>
+</head>
+<body>
+
+<div th:replace="~{fragments :: navbar}"></div>
+
+<main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div style="text-align: center; max-width: 520px;">
+        <div style="font-size: 5rem; margin-bottom: 20px;">⏱️</div>
+        <h1 style="font-size: 1.8rem; margin-bottom: 12px; color: var(--text-primary);">
+            Too Many Requests
+        </h1>
+        <p style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6;">
+            You've made too many requests in a short period.
+            This is to protect our service from abuse.
+        </p>
+
+        <div th:if="${retryAfter}" style="margin-bottom: 24px;">
+            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent); margin-bottom: 8px;" id="countdown">
+                <span th:text="${retryAfter}">60</span>s
+            </div>
+            <p style="font-size: .9rem; color: var(--text-muted);">
+                Please wait before trying again
+            </p>
+        </div>
+
+        <p th:unless="${retryAfter}" style="font-size: .9rem; color: var(--text-muted); margin-bottom: 32px;">
+            Please wait a moment and try again.
+        </p>
+
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a th:href="@{/vault}" class="btn btn-primary">
+                Return to Vault
+            </a>
+            <button class="btn btn-secondary" onclick="location.reload()">
+                Try Again
+            </button>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments :: footer}"></div>
+
+<script th:if="${retryAfter}" th:inline="javascript">
+    let secondsLeft = /*[[${retryAfter}]]*/ 60;
+    const countdownEl = document.getElementById('countdown');
+
+    const timer = setInterval(() => {
+        secondsLeft--;
+
+        if (secondsLeft <= 0) {
+            clearInterval(timer);
+            countdownEl.innerHTML = '<span style="color: var(--success);">✓ Ready</span>';
+
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            countdownEl.textContent = secondsLeft + 's';
+        }
+    }, 1000);
+</script>
+
+</body>
+</html>
