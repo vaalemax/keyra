@@ -112,8 +112,12 @@ This project treats security as a design constraint, not an afterthought:
 
 ## 📸 Screenshots
 
-*(add a few screenshots here — vault view, 2FA setup, audit log — this section sells the
-project instantly to a non-technical reviewer)*
+<img width="1917" height="910" alt="image" src="https://github.com/user-attachments/assets/b9557e5a-20d7-48f3-a7e4-118fc714cbc2" />
+
+<img width="1919" height="906" alt="image" src="https://github.com/user-attachments/assets/ee94e924-de93-49fc-87c9-bd9a0d6ff88d" />
+
+<img width="1919" height="905" alt="image" src="https://github.com/user-attachments/assets/da0d0006-e3fe-4896-a7c1-07bea920cd6d" />
+
 
 ---
 
