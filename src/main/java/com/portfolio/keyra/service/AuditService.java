@@ -1,0 +1,184 @@
+package com.portfolio.keyra.service;
+
+import com.portfolio.keyra.model.AuditLog;
+import com.portfolio.keyra.model.User;
+import com.portfolio.keyra.repository.AuditLogRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+public class AuditService {
+
+    private final AuditLogRepository auditLogRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
+
+    public AuditService(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AuditLog> getUserAuditLogs(Long userId, Pageable pageable) {
+        return auditLogRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
+    }
+
+    public String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getHeader("X-Real-IP");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getRemoteAddr();
+        if (ip != null && ip.contains(","))
+            ip = ip.split(",")[0].trim();
+        return ip;
+    }
+
+    public String getUserAgent(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent != null && userAgent.length() > 500)
+            userAgent = userAgent.substring(0, 500);
+        return userAgent;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getActionStatistics(Long userId) {
+        List<AuditLog> logs = auditLogRepository.findByUserIdOrderByTimestampDesc(
+                userId,
+                PageRequest.of(0, 1000)
+        ).getContent();
+
+        return logs.stream()
+                .collect(Collectors.groupingBy(
+                        log -> log.getAction().name(),
+                        Collectors.counting()
+                ));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getDailyActivityStats(Long userId, int days) {
+        LocalDateTime since = LocalDateTime.now().minusDays(days);
+        List<AuditLog> logs = auditLogRepository.findByUserIdAndTimestampAfter(userId, since);
+
+        return logs.stream()
+                .collect(Collectors.groupingBy(
+                        log -> log.getTimestamp().toLocalDate().toString(),
+                        Collectors.counting()
+                ));
+    }
+
+    @Transactional
+    public void auditVaultSuccess(AuditLog.AuditAction auditAction, String entityType, User user,
+                                  Long entityId, String message, String clientIp, String userAgent) {
+        this.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.SUCCESS,
+                entityType,
+                entityId,
+                message,
+                clientIp,
+                userAgent
+        );
+    }
+
+    @Transactional
+    public void auditVaultFailure(AuditLog.AuditAction auditAction, String entityType, User user,
+                                  Long entityId, String reason, String clientIp, String userAgent){
+        this.logActionWithEntity(
+                user,
+                auditAction,
+                AuditLog.AuditStatus.FAILURE,
+                entityType,
+                entityId,
+                reason,
+                clientIp,
+                userAgent
+        );
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAction(
+            User user,
+            AuditLog.AuditAction action,
+            AuditLog.AuditStatus status,
+            String details,
+            String ipAddress,
+            String userAgent
+    ) {
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setUser(user);
+            auditLog.setAction(action);
+            auditLog.setStatus(status);
+            auditLog.setDetails(details);
+            auditLog.setIpAddress(ipAddress);
+            auditLog.setUserAgent(userAgent);
+
+            auditLogRepository.save(auditLog);
+
+            log.debug("Audit log created - user: {}, action: {}, status: {}",
+                    user != null ? user.getUsername() : "SYSTEM",
+                    action,
+                    status);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log - action: {}, user: {}",
+                    action,
+                    user != null ? user.getUsername() : "SYSTEM",
+                    e);
+        }
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void logActionWithEntity(
+            User user,
+            AuditLog.AuditAction action,
+            AuditLog.AuditStatus status,
+            String entityType,
+            Long entityId,
+            String details,
+            String ipAddress,
+            String userAgent
+    ) {
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setUser(user);
+            auditLog.setAction(action);
+            auditLog.setStatus(status);
+            auditLog.setEntityType(entityType);
+            auditLog.setEntityId(entityId);
+            auditLog.setDetails(details);
+            auditLog.setIpAddress(ipAddress);
+            auditLog.setUserAgent(userAgent);
+
+            auditLogRepository.save(auditLog);
+
+            log.debug("Audit log created - user: {}, action: {}, entity: {} (ID: {})",
+                    user != null ? user.getUsername() : "SYSTEM",
+                    action,
+                    entityType,
+                    entityId);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log with entity - action: {}, user: {}",
+                    action,
+                    user != null ? user.getUsername() : "SYSTEM",
+                    e);
+        }
+    }
+}

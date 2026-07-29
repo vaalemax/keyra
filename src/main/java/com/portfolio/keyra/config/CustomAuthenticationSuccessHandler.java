@@ -1,0 +1,96 @@
+package com.portfolio.keyra.config;
+
+import com.portfolio.keyra.model.AuditLog;
+import com.portfolio.keyra.model.User;
+import com.portfolio.keyra.repository.UserRepository;
+import com.portfolio.keyra.service.AuditService;
+import com.portfolio.keyra.service.EncryptionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.io.IOException;
+
+@Component
+public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final AuditService auditService;
+
+    private final EncryptionService encryptionService;
+
+    private final UserRepository userRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
+
+    public CustomAuthenticationSuccessHandler(AuditService auditService,
+                                              EncryptionService encryptionService,
+                                              UserRepository userRepository) {
+        this.auditService = auditService;
+        this.encryptionService = encryptionService;
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException {
+
+        String username = authentication.getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found: " + username));
+
+        if (user.isTwoFactorEnabled()) {
+            HttpSession session = request.getSession();
+            session.setAttribute("2FA_USER_ID", user.getId());
+            session.setAttribute("2FA_USERNAME", user.getUsername());
+
+            response.sendRedirect("/login/2fa");
+            return;
+        }
+
+        try {
+            String encryptionKey = user.getEncryptionKey();
+            SecretKey aesKey = encryptionService.deriveAesKey(encryptionKey);
+
+            HttpSession session = request.getSession();
+            session.setAttribute("AES_KEY", aesKey);
+
+            log.info("Session ID: {}", session.getId());
+            log.info("Session max inactive interval: {} seconds", session.getMaxInactiveInterval());
+
+            auditService.logAction(
+                    user,
+                    AuditLog.AuditAction.LOGIN_SUCCESS,
+                    AuditLog.AuditStatus.SUCCESS,
+                    "Login successful",
+                    auditService.getClientIp(request),
+                    request.getHeader("User-Agent")
+            );
+
+            response.sendRedirect("/vault");
+
+        } catch (Exception e) {
+            log.error("Error in authentication success handler", e);
+
+            auditService.logAction(
+                    user,
+                    AuditLog.AuditAction.SYSTEM_ERROR,
+                    AuditLog.AuditStatus.FAILURE,
+                    "Login error: " + e.getMessage(),
+                    auditService.getClientIp(request),
+                    request.getHeader("User-Agent")
+            );
+
+            response.sendRedirect("/login?error=true");
+        }
+    }
+}
