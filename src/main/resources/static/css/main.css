@@ -126,6 +126,7 @@ input, button, select, textarea {
 }
 .btn-primary:hover {
     background: var(--accent-hover);
+    color: #fff;
     box-shadow: var(--shadow-glow);
 }
 
