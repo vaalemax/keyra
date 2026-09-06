@@ -204,13 +204,13 @@
 
 @media (max-width: 680px) {
     .vault-page        { padding: 20px 16px 40px; }
-    .vault-stats       { grid-template-columns: 1fr 1fr; }
+    .vault-summary       { grid-template-columns: 1fr 1fr; }
     .vault-grid        { grid-template-columns: 1fr; }
     .vault-search      { flex-direction: column; }
     .vault-search__filter { min-width: 100%; }
 }
 @media (max-width: 380px) {
-    .vault-stats { grid-template-columns: 1fr; }
+    .vault-summary { grid-template-columns: 1fr; }
 }
 
 
