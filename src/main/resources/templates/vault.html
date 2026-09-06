@@ -55,27 +55,26 @@
 
     <div th:replace="~{fragments :: messages}"></div>
 
-    <div class="vault-stats">
-        <div class="vault-stat">
-            <div class="vault-stat__icon vault-stat__icon--total">🗁</div>
-            <div class="vault-stat__info">
-                <span class="vault-stat__value" th:text="${totalCount}">0</span>
-                <span class="vault-stat__label">Total</span>
-            </div>
+    <div class="vault-summary">
+        <div class="vault-summary__bar" role="img"
+             th:attr="aria-label=${secureCount} + ' secure, ' + ${weakCount} + ' weak out of ' + ${totalCount}">
+        <span class="vault-summary__segment vault-summary__segment--secure"
+              th:style="'width:' + ${totalCount > 0 ? (secureCount * 100 / totalCount) : 0} + '%'"></span>
+            <span class="vault-summary__segment vault-summary__segment--weak"
+                  th:style="'width:' + ${totalCount > 0 ? (weakCount * 100 / totalCount) : 0} + '%'"></span>
         </div>
-        <div class="vault-stat">
-            <div class="vault-stat__icon vault-stat__icon--secure">🛡</div>
-            <div class="vault-stat__info">
-                <span class="vault-stat__value" th:text="${secureCount}">0</span>
-                <span class="vault-stat__label">Secure</span>
-            </div>
-        </div>
-        <div class="vault-stat">
-            <div class="vault-stat__icon vault-stat__icon--weak">⚠</div>
-            <div class="vault-stat__info">
-                <span class="vault-stat__value" th:text="${weakCount}">0</span>
-                <span class="vault-stat__label">To Update</span>
-            </div>
+
+        <div class="vault-summary__figures">
+        <span class="vault-summary__figure">
+            <strong th:text="${totalCount}">0</strong> credentials stored
+        </span>
+            <span class="vault-summary__divider">/</span>
+            <span class="vault-summary__figure" th:if="${weakCount > 0}">
+            <strong th:text="${weakCount}">0</strong> could be stronger
+        </span>
+            <span class="vault-summary__figure vault-summary__figure--ok" th:unless="${weakCount > 0}">
+            all passwords look solid
+        </span>
         </div>
     </div>
 
